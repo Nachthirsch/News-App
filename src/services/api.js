@@ -57,7 +57,7 @@ export const getLocalNews = async () => {
     q: "Indonesia",
     sort: "newest",
     fq: 'glocations.contains:("Indonesia")',
-    fl: "headline,multimedia,web_url,pub_date,abstract", // Menambahkan field multimedia
+    fl: "headline,multimedia,web_url,pub_date,abstract,source", // Menambahkan field multimedia
   };
   const cacheKey = getCacheKey("local", params);
 
