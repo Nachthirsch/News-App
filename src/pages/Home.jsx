@@ -1,8 +1,8 @@
-import React, { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { fetchIndonesiaNews, saveNews, unsaveNews } from '../store/slices/newsSlice';
-import NewsGrid from '../components/NewsGrid';
-import LoadingSpinner from '../components/LoadingSpinner';
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchIndonesiaNews, saveNews, unsaveNews } from "../store/slices/newsSlice";
+import NewsGrid from "../components/NewsGrid";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 const Home = () => {
   const dispatch = useDispatch();
@@ -13,10 +13,8 @@ const Home = () => {
   }, [dispatch]);
 
   const handleSave = (article) => {
-    const isAlreadySaved = savedNews.some(
-      saved => saved.headline.main === article.headline.main
-    );
-    
+    const isAlreadySaved = savedNews.some((saved) => saved.headline.main === article.headline.main);
+
     if (isAlreadySaved) {
       dispatch(unsaveNews(article));
     } else {
@@ -27,9 +25,7 @@ const Home = () => {
   return (
     <div className="container mx-auto px-4">
       <h1 className="text-3xl font-bold mb-2">Berita Indonesia Terkini</h1>
-      <p className="text-gray-600 mb-6">
-        Kumpulan berita terbaru dari berbagai sumber terpercaya
-      </p>
+      <p className="text-gray-600 mb-6">Kumpulan berita terbaru dari berbagai sumber terpercaya</p>
       {loading ? (
         <div className="flex justify-center items-center h-64">
           <LoadingSpinner />
@@ -40,11 +36,7 @@ const Home = () => {
           <span className="block sm:inline">{error}</span>
         </div>
       ) : (
-        <NewsGrid 
-          news={indonesiaNews} 
-          onSave={handleSave}
-          savedNews={savedNews}
-        />
+        <NewsGrid news={indonesiaNews} onSave={handleSave} savedNews={savedNews} />
       )}
     </div>
   );

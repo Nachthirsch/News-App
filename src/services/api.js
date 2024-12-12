@@ -54,9 +54,10 @@ const saveToCache = (cacheKey, data) => {
 
 export const getLocalNews = async () => {
   const params = {
-    q: "Indonesia", // Search for Indonesia-related news
+    q: "Indonesia",
     sort: "newest",
-    fq: 'glocations.contains:("Indonesia")', // Filter for Indonesia location
+    fq: 'glocations.contains:("Indonesia")',
+    fl: "headline,multimedia,web_url,pub_date,abstract", // Menambahkan field multimedia
   };
   const cacheKey = getCacheKey("local", params);
 
@@ -67,8 +68,21 @@ export const getLocalNews = async () => {
 
   try {
     const response = await api.get("/articlesearch.json", { params });
-    saveToCache(cacheKey, response.data);
-    return response;
+
+    // Memproses data untuk mendapatkan URL gambar
+    const processedData = {
+      ...response.data,
+      response: {
+        ...response.data.response,
+        docs: response.data.response.docs.map((doc) => ({
+          ...doc,
+          image_url: doc.multimedia?.length > 0 ? `https://www.nytimes.com/${doc.multimedia[0].url}` : "https://placehold.co/600x400?text=No+Image", // Default image jika tidak ada gambar
+        })),
+      },
+    };
+
+    saveToCache(cacheKey, processedData);
+    return { data: processedData };
   } catch (error) {
     if (error.response?.status === 429) {
       throw new Error("Rate limit exceeded. Please try again in a few minutes.");
@@ -79,9 +93,9 @@ export const getLocalNews = async () => {
 
 export const getProgrammingNews = async () => {
   const params = {
-    q: "programming OR software development OR coding OR developer",
+    q: "programming OR technology OR software development",
     sort: "newest",
-    fq: 'news_desk:("Technology") OR section_name:("Technology")',
+    fl: "headline,multimedia,web_url,pub_date,abstract,source",
   };
   const cacheKey = getCacheKey("programming", params);
 
@@ -92,8 +106,19 @@ export const getProgrammingNews = async () => {
 
   try {
     const response = await api.get("/articlesearch.json", { params });
-    saveToCache(cacheKey, response.data);
-    return response;
+    const processedData = {
+      ...response.data,
+      response: {
+        ...response.data.response,
+        docs: response.data.response.docs.map((doc) => ({
+          ...doc,
+          image_url: doc.multimedia?.length > 0 ? `https://www.nytimes.com/${doc.multimedia[0].url}` : "https://placehold.co/600x400?text=No+Image",
+        })),
+      },
+    };
+
+    saveToCache(cacheKey, processedData);
+    return { data: processedData };
   } catch (error) {
     if (error.response?.status === 429) {
       throw new Error("Rate limit exceeded. Please try again in a few minutes.");
@@ -102,11 +127,11 @@ export const getProgrammingNews = async () => {
   }
 };
 
-export const searchNews = async (query, page = 1) => {
+export const searchNews = async (query) => {
   const params = {
     q: query,
-    page: page - 1,
     sort: "newest",
+    fl: "headline,multimedia,web_url,pub_date,abstract,source",
   };
   const cacheKey = getCacheKey("search", params);
 
@@ -117,8 +142,19 @@ export const searchNews = async (query, page = 1) => {
 
   try {
     const response = await api.get("/articlesearch.json", { params });
-    saveToCache(cacheKey, response.data);
-    return response;
+    const processedData = {
+      ...response.data,
+      response: {
+        ...response.data.response,
+        docs: response.data.response.docs.map((doc) => ({
+          ...doc,
+          image_url: doc.multimedia?.length > 0 ? `https://www.nytimes.com/${doc.multimedia[0].url}` : "https://placehold.co/600x400?text=No+Image",
+        })),
+      },
+    };
+
+    saveToCache(cacheKey, processedData);
+    return { data: processedData };
   } catch (error) {
     if (error.response?.status === 429) {
       throw new Error("Rate limit exceeded. Please try again in a few minutes.");
