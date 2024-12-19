@@ -93,9 +93,10 @@ export const getLocalNews = async () => {
 
 export const getProgrammingNews = async () => {
   const params = {
-    q: "programming OR technology OR software development",
-    sort: "newest",
+    q: "Programming or Coding or Software Development",
+    sort: "relevance",
     fl: "headline,multimedia,web_url,pub_date,abstract,source",
+    page: 0,
   };
   const cacheKey = getCacheKey("programming", params);
 
@@ -130,8 +131,10 @@ export const getProgrammingNews = async () => {
 export const searchNews = async (query) => {
   const params = {
     q: query,
-    sort: "newest",
+    sort: "relevance", // Change from "newest" to "relevance"
     fl: "headline,multimedia,web_url,pub_date,abstract,source",
+    fq: `headline:("${query}") OR lead_paragraph:("${query}") OR keywords:("${query}")`,
+    page: 0, // Start from the first page
   };
   const cacheKey = getCacheKey("search", params);
 
