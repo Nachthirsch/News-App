@@ -21,12 +21,6 @@ const Footer = () => {
           <div className="text-sm text-gray-600 mb-4">
             Created by <span className="font-semibold hover:text-blue-500 transition-colors">Handra Putratama Tanjung</span>
           </div>
-
-          <div className="flex flex-wrap justify-center gap-2">
-            <span className="px-3 py-1 text-xs font-medium text-blue-600 bg-blue-50 rounded-full">React</span>
-            <span className="px-3 py-1 text-xs font-medium text-blue-600 bg-blue-50 rounded-full">Tailwind</span>
-            <span className="px-3 py-1 text-xs font-medium text-blue-600 bg-blue-50 rounded-full">Redux Thunk</span>
-          </div>
         </div>
       </div>
     </footer>
