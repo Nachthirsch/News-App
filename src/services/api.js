@@ -55,7 +55,7 @@ const saveToCache = (cacheKey, data) => {
 export const getLocalNews = async () => {
   const params = {
     q: "Indonesia",
-    sort: "newest",
+    sort: "relevance",
     fq: 'glocations.contains:("Indonesia")',
     fl: "headline,multimedia,web_url,pub_date,abstract,source", // Menambahkan field multimedia
   };
