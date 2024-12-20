@@ -76,7 +76,7 @@ export const getLocalNews = async () => {
         ...response.data.response,
         docs: response.data.response.docs.map((doc) => ({
           ...doc,
-          image_url: doc.multimedia?.length > 0 ? `https://www.nytimes.com/${doc.multimedia[0].url}` : "https://placehold.co/600x400?text=No+Image", // Default image jika tidak ada gambar
+          image_url: doc.multimedia?.length > 0 ? `https://www.nytimes.com/${doc.multimedia[0].url}` : `https://placehold.co/600x400?text=${encodeURIComponent(doc.headline.main)}`, // Default image dengan keyword dari judul
         })),
       },
     };
@@ -113,7 +113,7 @@ export const getProgrammingNews = async () => {
         ...response.data.response,
         docs: response.data.response.docs.map((doc) => ({
           ...doc,
-          image_url: doc.multimedia?.length > 0 ? `https://www.nytimes.com/${doc.multimedia[0].url}` : "https://placehold.co/600x400?text=No+Image",
+          image_url: doc.multimedia?.length > 0 ? `https://www.nytimes.com/${doc.multimedia[0].url}` : `https://placehold.co/600x400?text=${encodeURIComponent(doc.headline.main)}`, // Default image dengan keyword dari judul
         })),
       },
     };
@@ -151,7 +151,7 @@ export const searchNews = async (query) => {
         ...response.data.response,
         docs: response.data.response.docs.map((doc) => ({
           ...doc,
-          image_url: doc.multimedia?.length > 0 ? `https://www.nytimes.com/${doc.multimedia[0].url}` : "https://placehold.co/600x400?text=No+Image",
+          image_url: doc.multimedia?.length > 0 ? `https://www.nytimes.com/${doc.multimedia[0].url}` : `https://placehold.co/600x400?text=${encodeURIComponent(doc.headline.main)}`, // Default image dengan keyword dari judul
         })),
       },
     };
