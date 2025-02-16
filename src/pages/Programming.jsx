@@ -13,7 +13,7 @@ const Programming = () => {
   }, [dispatch]);
 
   const handleSave = (article) => {
-    const isAlreadySaved = savedNews.some((saved) => saved.headline.main === article.headline.main);
+    const isAlreadySaved = savedNews.some((saved) => saved.web_url === article.web_url);
 
     if (isAlreadySaved) {
       dispatch(unsaveNews(article));
