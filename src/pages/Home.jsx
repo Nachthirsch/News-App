@@ -23,15 +23,13 @@ const Home = () => {
   };
 
   return (
-    <div className="container mx-auto px-4">
-      <h1 className="text-3xl font-bold mb-2">Berita Indonesia Terkini</h1>
-      <p className="text-gray-600 mb-6">Kumpulan berita terbaru dari berbagai sumber terpercaya</p>
+    <div className="container mx-auto px-4 pt-10 sm:pt-10">
       {loading ? (
         <div className="flex justify-center items-center h-64">
           <LoadingSpinner />
         </div>
       ) : error ? (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
+        <div className="bg-red-100 dark:bg-red-900/30 border border-red-400 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded relative">
           <strong className="font-bold">Error: </strong>
           <span className="block sm:inline">{error}</span>
         </div>

@@ -7,23 +7,27 @@ import Programming from "./pages/Programming";
 import Saved from "./pages/Saved";
 import Search from "./pages/Search";
 import Footer from "./components/Footer";
+import { ThemeProvider } from "./context/ThemeContext";
+
 function App() {
   return (
     <Provider store={store}>
-      <Router>
-        <div className="min-h-screen bg-gray-100">
-          <Header />
-          <main>
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/programming" element={<Programming />} />
-              <Route path="/saved" element={<Saved />} />
-              <Route path="/search" element={<Search />} />
-            </Routes>
-          </main>
-          <Footer />
-        </div>
-      </Router>
+      <ThemeProvider>
+        <Router>
+          <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+            <Header />
+            <main>
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/programming" element={<Programming />} />
+                <Route path="/saved" element={<Saved />} />
+                <Route path="/search" element={<Search />} />
+              </Routes>
+            </main>
+            <Footer />
+          </div>
+        </Router>
+      </ThemeProvider>
     </Provider>
   );
 }
