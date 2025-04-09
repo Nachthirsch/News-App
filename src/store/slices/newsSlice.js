@@ -11,20 +11,39 @@ const loadSavedNews = () => {
   }
 };
 
+// Helper untuk memastikan data berita diolah dengan konsisten
+const processArticles = (articles) => {
+  if (!Array.isArray(articles)) return [];
+
+  return articles.map((article) => {
+    // Pastikan headline ada
+    if (!article.headline) {
+      article.headline = { main: "No Title Available" };
+    }
+
+    // Pastikan abstract ada
+    if (!article.abstract) {
+      article.abstract = "No description available";
+    }
+
+    return article;
+  });
+};
+
 export const fetchIndonesiaNews = createAsyncThunk("news/fetchIndonesiaNews", async () => {
   const response = await getLocalNews();
-  return response.data.response.docs;
+  return processArticles(response.data.response.docs);
 });
 
 export const fetchProgrammingNews = createAsyncThunk("news/fetchProgrammingNews", async () => {
   const response = await getProgrammingNews();
-  return response.data.response.docs;
+  return processArticles(response.data.response.docs);
 });
 
 export const fetchSearchNews = createAsyncThunk("news/fetchSearchNews", async ({ query, page = 1 }) => {
   const response = await searchNews(query, page);
   return {
-    docs: response.data.response.docs,
+    docs: processArticles(response.data.response.docs),
     page,
     isNewSearch: page === 1,
   };

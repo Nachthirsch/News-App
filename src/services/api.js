@@ -56,8 +56,7 @@ export const getLocalNews = async () => {
   const params = {
     q: "Indonesia",
     sort: "relevance",
-    fq: 'glocations.contains:("Indonesia")',
-    fl: "headline,multimedia,web_url,pub_date,abstract,source", // Menambahkan field multimedia
+    fq: 'timesTag.location:"Indonesia"', // Updated from glocations.contains to timesTag.location
   };
   const cacheKey = getCacheKey("local", params);
 
@@ -68,16 +67,11 @@ export const getLocalNews = async () => {
 
   try {
     const response = await api.get("/articlesearch.json", { params });
-
-    // Memproses data untuk mendapatkan URL gambar
     const processedData = {
       ...response.data,
       response: {
         ...response.data.response,
-        docs: response.data.response.docs.map((doc) => ({
-          ...doc,
-          image_url: doc.multimedia?.length > 0 ? `https://www.nytimes.com/${doc.multimedia[0].url}` : `https://placehold.co/600x400?text=${encodeURIComponent(doc.headline.main)}`, // Default image dengan keyword dari judul
-        })),
+        docs: response.data.response.docs,
       },
     };
 
@@ -95,7 +89,6 @@ export const getProgrammingNews = async () => {
   const params = {
     q: "Programming or Coding or Software Development",
     sort: "relevance",
-    fl: "headline,multimedia,web_url,pub_date,abstract,source",
     page: 0,
   };
   const cacheKey = getCacheKey("programming", params);
@@ -111,10 +104,7 @@ export const getProgrammingNews = async () => {
       ...response.data,
       response: {
         ...response.data.response,
-        docs: response.data.response.docs.map((doc) => ({
-          ...doc,
-          image_url: doc.multimedia?.length > 0 ? `https://www.nytimes.com/${doc.multimedia[0].url}` : `https://placehold.co/600x400?text=${encodeURIComponent(doc.headline.main)}`, // Default image dengan keyword dari judul
-        })),
+        docs: response.data.response.docs,
       },
     };
 
@@ -128,13 +118,12 @@ export const getProgrammingNews = async () => {
   }
 };
 
-export const searchNews = async (query) => {
+export const searchNews = async (query, page = 0) => {
   const params = {
     q: query,
-    sort: "relevance", // Change from "newest" to "relevance"
-    fl: "headline,multimedia,web_url,pub_date,abstract,source",
-    fq: `headline:("${query}") OR lead_paragraph:("${query}") OR keywords:("${query}")`,
-    page: 0, // Start from the first page
+    sort: "relevance",
+    fq: `headline.default:("${query}") OR summary:("${query}")`, // Updated from headline and lead_paragraph to headline.default and summary
+    page: page,
   };
   const cacheKey = getCacheKey("search", params);
 
@@ -149,10 +138,7 @@ export const searchNews = async (query) => {
       ...response.data,
       response: {
         ...response.data.response,
-        docs: response.data.response.docs.map((doc) => ({
-          ...doc,
-          image_url: doc.multimedia?.length > 0 ? `https://www.nytimes.com/${doc.multimedia[0].url}` : `https://placehold.co/600x400?text=${encodeURIComponent(doc.headline.main)}`, // Default image dengan keyword dari judul
-        })),
+        docs: response.data.response.docs,
       },
     };
 
