@@ -7,8 +7,12 @@ const BASE_URL = import.meta.env.VITE_BASE_URL;
 const cache = new Map();
 const CACHE_DURATION = 5 * 60 * 1000; // 5 menit dalam milliseconds
 
-// Fungsi untuk membuat cache key
+// Fungsi untuk membuat cache key - ensure uniqueness between different searches
 const getCacheKey = (endpoint, params) => {
+  // Add query parameter explicitly to create distinct cache keys for different search terms
+  if (endpoint === "search" && params.q) {
+    return `${endpoint}:${params.q}:${params.page || 0}`;
+  }
   return `${endpoint}:${JSON.stringify(params)}`;
 };
 
@@ -147,13 +151,14 @@ export const searchNews = async (query, page = 0) => {
   const params = {
     q: query,
     sort: "relevance",
-    // Use a more general query approach after the API change
     page: page,
   };
+  // Create a more specific cache key for searches
   const cacheKey = getCacheKey("search", params);
 
   const cachedData = checkCache(cacheKey);
   if (cachedData) {
+    console.log("Using cached data for search:", query, "page:", page);
     return { data: cachedData };
   }
 

@@ -53,7 +53,8 @@ export const fetchSearchNews = createAsyncThunk("news/fetchSearchNews", async ({
   return {
     docs: processArticles(response.data.response.docs),
     page,
-    isNewSearch: page === 0,
+    query, // Add query to the payload
+    isNewSearch: page === 0, // Set isNewSearch flag when page is 0
   };
 });
 
@@ -149,12 +150,13 @@ const newsSlice = createSlice({
       })
 
       // Search News
-      .addCase(fetchSearchNews.pending, (state) => {
+      .addCase(fetchSearchNews.pending, (state, action) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(fetchSearchNews.fulfilled, (state, action) => {
         state.loading = false;
+        // Clear previous search results if it's a new search
         if (action.payload.isNewSearch) {
           state.searchResults = action.payload.docs;
         } else {
