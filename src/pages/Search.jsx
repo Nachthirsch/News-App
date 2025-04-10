@@ -16,15 +16,22 @@ const Search = () => {
   useEffect(() => {
     const query = searchParams.get("q");
     if (query) {
+      console.log("Initiating search for:", query);
       setSearchQuery(query);
       dispatch(fetchSearchNews({ query, page: 1 }));
       setHasSearched(true);
     }
   }, [searchParams, dispatch]);
 
+  useEffect(() => {
+    // Log search results when they update
+    console.log("Search results:", searchResults);
+  }, [searchResults]);
+
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
+      console.log("Executing search for:", searchQuery);
       setSearchParams({ q: searchQuery });
       setPage(1);
       dispatch(fetchSearchNews({ query: searchQuery, page: 1 }));

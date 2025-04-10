@@ -52,11 +52,14 @@ const saveToCache = (cacheKey, data) => {
   });
 };
 
-export const getLocalNews = async () => {
+export const getLocalNews = async (page = 0) => {
+  // Using a more flexible approach with multiple query combinations
   const params = {
     q: "Indonesia",
     sort: "relevance",
-    fq: 'timesTag.location:"Indonesia"', // Updated from glocations.contains to timesTag.location
+    page: page,
+    // Try a more general query without specific field filters
+    // The API will search across multiple fields including headline, body, etc.
   };
   const cacheKey = getCacheKey("local", params);
 
@@ -67,6 +70,16 @@ export const getLocalNews = async () => {
 
   try {
     const response = await api.get("/articlesearch.json", { params });
+
+    // Log the response for debugging
+    console.log("API Response:", response.data);
+
+    // Check if response has the expected structure
+    if (!response.data?.response?.docs) {
+      console.error("Unexpected API response structure:", response.data);
+      throw new Error("Unexpected API response format");
+    }
+
     const processedData = {
       ...response.data,
       response: {
@@ -78,6 +91,7 @@ export const getLocalNews = async () => {
     saveToCache(cacheKey, processedData);
     return { data: processedData };
   } catch (error) {
+    console.error("API Error:", error);
     if (error.response?.status === 429) {
       throw new Error("Rate limit exceeded. Please try again in a few minutes.");
     }
@@ -85,11 +99,11 @@ export const getLocalNews = async () => {
   }
 };
 
-export const getProgrammingNews = async () => {
+export const getProgrammingNews = async (page = 0) => {
   const params = {
     q: "Programming or Coding or Software Development",
     sort: "relevance",
-    page: 0,
+    page: page,
   };
   const cacheKey = getCacheKey("programming", params);
 
@@ -100,6 +114,16 @@ export const getProgrammingNews = async () => {
 
   try {
     const response = await api.get("/articlesearch.json", { params });
+
+    // Log the response for debugging
+    console.log("Programming News API Response:", response.data);
+
+    // Check if response has the expected structure
+    if (!response.data?.response?.docs) {
+      console.error("Unexpected API response structure:", response.data);
+      throw new Error("Unexpected API response format");
+    }
+
     const processedData = {
       ...response.data,
       response: {
@@ -111,6 +135,7 @@ export const getProgrammingNews = async () => {
     saveToCache(cacheKey, processedData);
     return { data: processedData };
   } catch (error) {
+    console.error("API Error in getProgrammingNews:", error);
     if (error.response?.status === 429) {
       throw new Error("Rate limit exceeded. Please try again in a few minutes.");
     }
@@ -122,7 +147,7 @@ export const searchNews = async (query, page = 0) => {
   const params = {
     q: query,
     sort: "relevance",
-    fq: `headline.default:("${query}") OR summary:("${query}")`, // Updated from headline and lead_paragraph to headline.default and summary
+    // Use a more general query approach after the API change
     page: page,
   };
   const cacheKey = getCacheKey("search", params);
@@ -134,6 +159,16 @@ export const searchNews = async (query, page = 0) => {
 
   try {
     const response = await api.get("/articlesearch.json", { params });
+
+    // Log the response for debugging
+    console.log("Search News API Response:", response.data);
+
+    // Check if response has the expected structure
+    if (!response.data?.response?.docs) {
+      console.error("Unexpected API response structure:", response.data);
+      throw new Error("Unexpected API response format");
+    }
+
     const processedData = {
       ...response.data,
       response: {
@@ -145,6 +180,7 @@ export const searchNews = async (query, page = 0) => {
     saveToCache(cacheKey, processedData);
     return { data: processedData };
   } catch (error) {
+    console.error("API Error in searchNews:", error);
     if (error.response?.status === 429) {
       throw new Error("Rate limit exceeded. Please try again in a few minutes.");
     }

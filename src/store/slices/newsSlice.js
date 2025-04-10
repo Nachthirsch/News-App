@@ -30,22 +30,30 @@ const processArticles = (articles) => {
   });
 };
 
-export const fetchIndonesiaNews = createAsyncThunk("news/fetchIndonesiaNews", async () => {
-  const response = await getLocalNews();
-  return processArticles(response.data.response.docs);
+export const fetchIndonesiaNews = createAsyncThunk("news/fetchIndonesiaNews", async ({ page = 0, isNewFetch = false }) => {
+  const response = await getLocalNews(page);
+  return {
+    docs: processArticles(response.data.response.docs),
+    page,
+    isNewFetch,
+  };
 });
 
-export const fetchProgrammingNews = createAsyncThunk("news/fetchProgrammingNews", async () => {
-  const response = await getProgrammingNews();
-  return processArticles(response.data.response.docs);
+export const fetchProgrammingNews = createAsyncThunk("news/fetchProgrammingNews", async ({ page = 0, isNewFetch = false }) => {
+  const response = await getProgrammingNews(page);
+  return {
+    docs: processArticles(response.data.response.docs),
+    page,
+    isNewFetch,
+  };
 });
 
-export const fetchSearchNews = createAsyncThunk("news/fetchSearchNews", async ({ query, page = 1 }) => {
+export const fetchSearchNews = createAsyncThunk("news/fetchSearchNews", async ({ query, page = 0 }) => {
   const response = await searchNews(query, page);
   return {
     docs: processArticles(response.data.response.docs),
     page,
-    isNewSearch: page === 1,
+    isNewSearch: page === 0,
   };
 });
 
@@ -59,6 +67,11 @@ const newsSlice = createSlice({
     loading: false,
     error: null,
     lastUpdated: null,
+    currentPage: {
+      indonesia: 0,
+      programming: 0,
+      search: 0,
+    },
   },
   reducers: {
     saveNews: (state, action) => {
@@ -75,22 +88,42 @@ const newsSlice = createSlice({
     clearError: (state) => {
       state.error = null;
     },
+    resetPageState: (state, action) => {
+      if (action.payload === "indonesia") {
+        state.currentPage.indonesia = 0;
+      } else if (action.payload === "programming") {
+        state.currentPage.programming = 0;
+      } else if (action.payload === "search") {
+        state.currentPage.search = 0;
+      }
+    },
   },
   extraReducers: (builder) => {
     builder
+      // Indonesia News
       .addCase(fetchIndonesiaNews.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(fetchIndonesiaNews.fulfilled, (state, action) => {
         state.loading = false;
-        state.indonesiaNews = action.payload;
+
+        // If it's a new fetch (e.g. first load or refresh), replace the array
+        // Otherwise, append to existing array for pagination
+        if (action.payload.isNewFetch) {
+          state.indonesiaNews = action.payload.docs;
+        } else {
+          state.indonesiaNews = [...state.indonesiaNews, ...action.payload.docs];
+        }
+
+        state.currentPage.indonesia = action.payload.page;
         state.lastUpdated = Date.now();
       })
       .addCase(fetchIndonesiaNews.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message;
       })
+
       // Programming News
       .addCase(fetchProgrammingNews.pending, (state) => {
         state.loading = true;
@@ -98,13 +131,23 @@ const newsSlice = createSlice({
       })
       .addCase(fetchProgrammingNews.fulfilled, (state, action) => {
         state.loading = false;
-        state.programmingNews = action.payload;
+
+        // If it's a new fetch (e.g. first load or refresh), replace the array
+        // Otherwise, append to existing array for pagination
+        if (action.payload.isNewFetch) {
+          state.programmingNews = action.payload.docs;
+        } else {
+          state.programmingNews = [...state.programmingNews, ...action.payload.docs];
+        }
+
+        state.currentPage.programming = action.payload.page;
         state.lastUpdated = Date.now();
       })
       .addCase(fetchProgrammingNews.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message;
       })
+
       // Search News
       .addCase(fetchSearchNews.pending, (state) => {
         state.loading = true;
@@ -117,6 +160,7 @@ const newsSlice = createSlice({
         } else {
           state.searchResults = [...state.searchResults, ...action.payload.docs];
         }
+        state.currentPage.search = action.payload.page;
         state.lastUpdated = Date.now();
       })
       .addCase(fetchSearchNews.rejected, (state, action) => {
@@ -126,5 +170,5 @@ const newsSlice = createSlice({
   },
 });
 
-export const { saveNews, unsaveNews, clearError } = newsSlice.actions;
+export const { saveNews, unsaveNews, clearError, resetPageState } = newsSlice.actions;
 export default newsSlice.reducer;
