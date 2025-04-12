@@ -47,10 +47,9 @@ const Programming = () => {
         <p className="text-gray-600 dark:text-gray-400">Latest programming and technology news from around the world</p>
       </div>
 
+      {/* Show skeleton loading state or news content */}
       {loading && currentPage.programming === 0 ? (
-        <div className="flex justify-center items-center h-64">
-          <LoadingSpinner />
-        </div>
+        <NewsGrid news={[]} onSave={handleSave} savedNews={savedNews} isLoading={true} />
       ) : error ? (
         <div className="bg-red-100 dark:bg-red-900/30 border border-red-400 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded relative">
           <strong className="font-bold">Error: </strong>
