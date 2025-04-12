@@ -51,7 +51,8 @@ const Header = () => {
             <div className="hidden sm:flex items-center gap-4 flex-1 justify-between ml-8">
               <ul className="flex items-center gap-4">
                 {[
-                  { path: "/", label: "Indonesia" },
+                  { path: "/", label: "Home" },
+                  { path: "/Indonesia", label: "Indonesia" },
                   { path: "/programming", label: "Programming" },
                   { path: "/saved", label: "Saved" },
                 ].map((item) => (

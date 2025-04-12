@@ -3,6 +3,7 @@ import { Provider } from "react-redux";
 import { store } from "./store";
 import Header from "./components/Header";
 import Home from "./pages/Home";
+import Indonesia from "./pages/Indonesia";
 import Programming from "./pages/Programming";
 import Saved from "./pages/Saved";
 import Search from "./pages/Search";
@@ -19,6 +20,7 @@ function App() {
             <main>
               <Routes>
                 <Route path="/" element={<Home />} />
+                <Route path="/Indonesia" element={<Indonesia />} />
                 <Route path="/programming" element={<Programming />} />
                 <Route path="/saved" element={<Saved />} />
                 <Route path="/search" element={<Search />} />

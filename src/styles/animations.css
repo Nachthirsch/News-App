@@ -1,0 +1,136 @@
+/* Animasi background dengan transisi keyframe yang lebih halus */
+@keyframes radialExpandLight {
+  0% {
+    background: #ffffff;
+    transform: scale(0.98);
+  }
+  5% {
+    background: radial-gradient(circle at center, #3b82f6 2%, #ffffff 90%);
+  }
+  10% {
+    background: radial-gradient(circle at center, #3b82f6 4%, #4338ca 5%, #ffffff 88%);
+  }
+  15% {
+    background: radial-gradient(circle at center, #3b82f6 6%, #4338ca 10%, #ffffff 85%);
+  }
+  20% {
+    background: radial-gradient(circle at center, #3b82f6 8%, #4338ca 15%, #6366f1 20%, #ffffff 80%);
+  }
+  25% {
+    background: radial-gradient(circle at center, #3b82f6 10%, #4338ca 20%, #6366f1 30%, #ffffff 75%);
+  }
+  30% {
+    background: radial-gradient(circle at center, #3b82f6 12%, #4338ca 25%, #6366f1 35%, #ffffff 70%);
+  }
+  35% {
+    background: radial-gradient(circle at center, #3b82f6 14%, #4338ca 30%, #6366f1 40%, #5352ab 60%, #ffffff 70%);
+  }
+  40% {
+    background: radial-gradient(circle at center, #3b82f6 16%, #4338ca 35%, #6366f1 45%, #5352ab 65%, #ffffff 68%);
+  }
+  50% {
+    background: radial-gradient(circle at center, #3b82f6 18%, #4338ca 40%, #5352ab 70%, #4f46e5 85%);
+  }
+  60% {
+    background: radial-gradient(circle at center, #3b82f6 20%, #4338ca 50%, #4f46e5 90%);
+  }
+  70% {
+    background: radial-gradient(circle at center, #3b82f6 24%, #4338ca 70%, #4f46e5 92%);
+  }
+  80% {
+    background: radial-gradient(circle at center, #3b82f6 26%, #4338ca 85%, #4f46e5 95%);
+  }
+  90% {
+    background: radial-gradient(circle at center, #3b82f6 28%, #4338ca 95%, #4f46e5 98%);
+  }
+  100% {
+    background: radial-gradient(circle at center, #3b82f6 30%, #4338ca 100%);
+    transform: scale(1);
+  }
+}
+
+@keyframes radialExpandDark {
+  0% {
+    background: #1f2937;
+    transform: scale(0.98);
+  }
+  5% {
+    background: radial-gradient(circle at center, #3b82f6 2%, #1f2937 90%);
+  }
+  10% {
+    background: radial-gradient(circle at center, #3b82f6 4%, #4338ca 5%, #1f2937 88%);
+  }
+  15% {
+    background: radial-gradient(circle at center, #3b82f6 6%, #4338ca 10%, #1f2937 85%);
+  }
+  20% {
+    background: radial-gradient(circle at center, #3b82f6 8%, #4338ca 15%, #6366f1 20%, #1f2937 80%);
+  }
+  25% {
+    background: radial-gradient(circle at center, #3b82f6 10%, #4338ca 20%, #6366f1 30%, #1f2937 75%);
+  }
+  30% {
+    background: radial-gradient(circle at center, #3b82f6 12%, #4338ca 25%, #6366f1 35%, #1f2937 70%);
+  }
+  35% {
+    background: radial-gradient(circle at center, #3b82f6 14%, #4338ca 30%, #6366f1 40%, #383e54 60%, #1f2937 70%);
+  }
+  40% {
+    background: radial-gradient(circle at center, #3b82f6 16%, #4338ca 35%, #6366f1 45%, #383e54 65%, #1f2937 68%);
+  }
+  50% {
+    background: radial-gradient(circle at center, #3b82f6 18%, #4338ca 40%, #383e54 70%, #4f46e5 85%);
+  }
+  60% {
+    background: radial-gradient(circle at center, #3b82f6 20%, #4338ca 50%, #4f46e5 90%);
+  }
+  70% {
+    background: radial-gradient(circle at center, #3b82f6 24%, #4338ca 70%, #4f46e5 92%);
+  }
+  80% {
+    background: radial-gradient(circle at center, #3b82f6 26%, #4338ca 85%, #4f46e5 95%);
+  }
+  90% {
+    background: radial-gradient(circle at center, #3b82f6 28%, #4338ca 95%, #4f46e5 98%);
+  }
+  100% {
+    background: radial-gradient(circle at center, #3b82f6 30%, #4338ca 100%);
+    transform: scale(1);
+  }
+}
+
+/* Kelas penerapan animasi */
+.hero-animate-light {
+  animation: radialExpandLight 2.5s linear forwards;
+}
+
+.hero-animate-dark {
+  animation: radialExpandDark 2.5s linear forwards;
+}
+
+/* Animasi fade-in untuk teks */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in-1 {
+  opacity: 0;
+  animation: fadeIn 1s ease-out 0.8s forwards;
+}
+
+.fade-in-2 {
+  opacity: 0;
+  animation: fadeIn 1s ease-out 1.2s forwards;
+}
+
+.fade-in-3 {
+  opacity: 0;
+  animation: fadeIn 1s ease-out 1.6s forwards;
+}
