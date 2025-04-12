@@ -138,19 +138,39 @@ Each article is presented in a visually appealing card format with options to:
 
 ## 📋 Project Structure
 
+```
+News-Web-App/
+├── public/                # Static assets
+├── src/
+│   ├── components/        # Reusable UI components
+│   │   ├── Header.jsx     # Navigation header
+│   │   ├── Footer.jsx     # Page footer
+│   │   ├── NewsCard.jsx   # Article card component
+│   │   ├── NewsGrid.jsx   # Grid layout for articles
+│   │   └── Hero-Home.jsx  # Animated hero component
+│   ├── context/           # React context providers
+│   │   └── ThemeContext.jsx  # Dark/light mode context
+│   ├── pages/             # Page components
+│   │   ├── Home.jsx       # Landing page
+│   │   ├── Search.jsx     # Search functionality
+│   │   ├── Indonesia.jsx  # Indonesia news page
+│   │   ├── Programming.jsx # Programming news page
+│   │   └── Saved.jsx      # Saved articles page
+│   ├── services/          # API and utility services
+│   │   └── api.js         # NYT API integration
+│   ├── store/             # Redux store configuration
+│   │   └── slices/        # Redux slices for state
+│   └── styles/            # CSS and styling files
+├── .env                   # Environment variables (not committed)
+├── tailwind.config.js     # Tailwind configuration
+├── vite.config.js         # Vite configuration
+└── package.json           # Project dependencies and scripts
+```
+
 ## 👨‍💻 Author
 
-Handra Putratama Tanjung - [GitHub](https://github.com/yourusername) | [LinkedIn](https://linkedin.com/in/yourusername)
+Handra Putratama Tanjung - [LinkedIn](https://www.linkedin.com/in/handra-putratama-tanjung/)
 
 ## 📝 License
 
 This project was created as a capstone project for the MSIB Studi Independen program with Hacktiv8 "ReactJS For Front End Website Developer".
-
-## 🙏 Acknowledgements
-
-- New York Times API for providing access to high-quality journalism
-- React Icons for the icon sets
-- Tailwind CSS for the styling utilities
-- Framer Motion for animations
-- React Spring for physics-based animations
-- Hacktiv8 for the educational program
