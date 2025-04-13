@@ -229,11 +229,11 @@ const Search = () => {
       </motion.div>
 
       {/* Main Content Area */}
-      <motion.div layout className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-6xl" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6 }}>
+      <motion.div layout className="container mx-auto px-4 sm:px-5 md:px-6 lg:px-8 max-w-6xl py-4 md:py-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6 }}>
         {/* Error Alert */}
         <AnimatePresence>
           {error && (
-            <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.3 }} className="bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 dark:border-red-500 text-red-700 dark:text-red-400 px-4 py-3 rounded-r mb-6 shadow-sm" role="alert">
+            <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.3 }} className="bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 dark:border-red-500 text-red-700 dark:text-red-400 p-3 sm:p-4 rounded-r mb-4 sm:mb-6 shadow-sm" role="alert">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
                   <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
@@ -251,9 +251,9 @@ const Search = () => {
         {/* Loading State - Replace with Skeleton */}
         <AnimatePresence>
           {loading && currentPage === 0 && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }} className="mt-8">
-              <div className="mb-6 bg-gray-50 dark:bg-gray-800/50 px-4 py-3 rounded-lg border border-gray-100 dark:border-gray-700">
-                <div className="h-6 w-2/3 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }} className="mt-4 sm:mt-6 md:mt-8">
+              <div className="mb-4 sm:mb-6 bg-gray-50 dark:bg-gray-800/50 p-3 sm:p-4 rounded-lg border border-gray-100 dark:border-gray-700">
+                <div className="h-5 sm:h-6 w-2/3 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
               </div>
               {renderSkeletonCards()}
             </motion.div>
@@ -263,22 +263,22 @@ const Search = () => {
         {/* Search Results */}
         <AnimatePresence mode="wait">
           {hasSearched && !loading && !error && (
-            <motion.div key={searchQuery} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.5 }}>
+            <motion.div key={searchQuery} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.5 }} className="space-y-6 md:space-y-8">
               {searchResults.length === 0 ? (
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl py-12 px-8 text-center max-w-2xl mx-auto border border-gray-100 dark:border-gray-700">
-                  <div className="flex justify-center mb-6">
-                    <div className="rounded-full bg-gray-100 dark:bg-gray-700 p-4">
-                      <svg className="h-10 w-10 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl py-8 sm:py-10 md:py-12 px-4 sm:px-6 md:px-8 text-center max-w-2xl mx-auto border border-gray-100 dark:border-gray-700 my-4 sm:my-6 md:my-8">
+                  <div className="flex justify-center mb-5 sm:mb-6">
+                    <div className="rounded-full bg-gray-100 dark:bg-gray-700 p-3 sm:p-4">
+                      <svg className="h-8 w-8 sm:h-10 sm:w-10 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                       </svg>
                     </div>
                   </div>
-                  <h3 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white mb-3">No results found</h3>
-                  <p className="text-gray-600 dark:text-gray-400 mb-6">
+                  <h3 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white mb-2 sm:mb-3">No results found</h3>
+                  <p className="text-gray-600 dark:text-gray-400 mb-4 sm:mb-6">
                     We couldn't find any articles matching "<span className="font-medium">{searchQuery}</span>"
                   </p>
-                  <p className="text-gray-500 dark:text-gray-500 text-sm mb-6">Try using different keywords, checking your spelling, or using more general terms.</p>
-                  <button onClick={handleClearSearch} className="inline-flex items-center justify-center px-5 py-2 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                  <p className="text-gray-500 dark:text-gray-500 text-sm mb-5 sm:mb-6 max-w-md mx-auto">Try using different keywords, checking your spelling, or using more general terms.</p>
+                  <button onClick={handleClearSearch} className="inline-flex items-center justify-center px-4 sm:px-5 py-2 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                     <svg className="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                     </svg>
@@ -286,30 +286,32 @@ const Search = () => {
                   </button>
                 </motion.div>
               ) : (
-                <motion.div layout>
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 bg-gray-50 dark:bg-gray-800/50 px-4 py-3 rounded-lg border border-gray-100 dark:border-gray-700">
-                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2 mb-2 sm:mb-0">
+                <motion.div layout className="space-y-6 md:space-y-8">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 bg-gray-50 dark:bg-gray-800/50 p-3 sm:p-4 rounded-lg border border-gray-100 dark:border-gray-700">
+                    <h2 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white flex flex-wrap items-center gap-1.5 sm:gap-2 mb-2 sm:mb-0">
                       <motion.div className="flex items-center" initial={{ scale: 1 }} animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 0.5, ease: "easeOut" }}>
                         <span className="text-blue-600 dark:text-blue-400 font-bold mr-1">{searchResults.length}</span>
                         <span>results for</span>
                       </motion.div>
-                      <span className="bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 px-2.5 py-1 rounded-md ml-1">"{searchQuery}"</span>
+                      <span className="bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md">"{searchQuery.length > 25 ? `${searchQuery.substring(0, 25)}...` : searchQuery}"</span>
                     </h2>
-                    <button onClick={handleClearSearch} className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:underline focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 rounded-md px-2 py-1">
+                    <button onClick={handleClearSearch} className="self-start sm:self-auto text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:underline focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 rounded-md px-2 py-1">
                       Clear search
                     </button>
                   </div>
 
-                  <NewsGrid news={searchResults} onSave={handleSave} savedNews={savedNews} isLoading={loading && currentPage === 0} />
+                  <div className="mb-2 sm:mb-4">
+                    <NewsGrid news={searchResults} onSave={handleSave} savedNews={savedNews} isLoading={loading && currentPage === 0} />
+                  </div>
 
                   {/* Load More Button */}
                   {searchResults.length >= 10 && !loading && (
-                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="mt-12 text-center">
-                      <button onClick={handleLoadMore} onMouseEnter={() => setLoadMoreHover(true)} onMouseLeave={() => setLoadMoreHover(false)} className="group relative inline-flex items-center justify-center px-8 py-3 overflow-hidden font-medium border border-gray-200 dark:border-gray-700 rounded-xl shadow-md transition duration-300 ease-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="mt-8 sm:mt-10 md:mt-12 mb-12 sm:mb-16 md:mb-20 text-center">
+                      <button onClick={handleLoadMore} onMouseEnter={() => setLoadMoreHover(true)} onMouseLeave={() => setLoadMoreHover(false)} className="group relative inline-flex items-center justify-center px-6 sm:px-8 py-2.5 sm:py-3 overflow-hidden font-medium border border-gray-200 dark:border-gray-700 rounded-xl shadow-md transition duration-300 ease-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
                         <motion.span className="absolute inset-0 flex items-center justify-center w-full h-full text-white bg-gradient-to-t from-blue-600 to-blue-500 group-hover:translate-y-0 ease" initial={{ translateY: "100%" }} animate={{ translateY: loadMoreHover ? "0%" : "100%" }} transition={{ duration: 0.3 }}></motion.span>
                         <motion.span className="absolute flex items-center justify-center w-full h-full text-gray-700 dark:text-gray-300 transition-all duration-300 transform ease" animate={{ translateY: loadMoreHover ? "100%" : "0%" }} transition={{ duration: 0.3 }}>
                           Load more articles
-                          <svg className="ml-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <svg className="ml-2 h-4 w-4 sm:h-5 sm:w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                           </svg>
                         </motion.span>
@@ -321,7 +323,7 @@ const Search = () => {
                   {/* Loading more indicator */}
                   <AnimatePresence>
                     {loading && currentPage > 0 && (
-                      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="mt-10 text-center">
+                      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="mt-6 sm:mt-8 mb-4 sm:mb-6 text-center">
                         <LoadingSpinner />
                         <p className="mt-2 text-gray-500 dark:text-gray-400">Loading more results...</p>
                       </motion.div>
