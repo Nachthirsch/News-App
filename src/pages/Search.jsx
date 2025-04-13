@@ -4,6 +4,7 @@ import { useSearchParams } from "react-router-dom";
 import { fetchSearchNews, saveNews, unsaveNews, resetPageState } from "../store/slices/newsSlice";
 import NewsGrid from "../components/NewsGrid";
 import LoadingSpinner from "../components/LoadingSpinner";
+import SkeletonNewsCard from "../components/SkeletonNewsCard";
 import { motion, AnimatePresence } from "framer-motion";
 
 const Search = () => {
@@ -83,6 +84,19 @@ const Search = () => {
       paddingTop: "5rem",
       paddingBottom: "4rem",
     },
+  };
+
+  // Add a new function to render skeleton cards
+  const renderSkeletonCards = () => {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {Array.from({ length: 6 }).map((_, index) => (
+          <motion.div key={index} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: index * 0.1 }}>
+            <SkeletonNewsCard />
+          </motion.div>
+        ))}
+      </div>
+    );
   };
 
   return (
@@ -234,12 +248,14 @@ const Search = () => {
           )}
         </AnimatePresence>
 
-        {/* Loading State */}
+        {/* Loading State - Replace with Skeleton */}
         <AnimatePresence>
           {loading && currentPage === 0 && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }} className="flex flex-col justify-center items-center h-64">
-              <LoadingSpinner size="large" />
-              <p className="mt-4 text-gray-600 dark:text-gray-400 animate-pulse">Searching for results...</p>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }} className="mt-8">
+              <div className="mb-6 bg-gray-50 dark:bg-gray-800/50 px-4 py-3 rounded-lg border border-gray-100 dark:border-gray-700">
+                <div className="h-6 w-2/3 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+              </div>
+              {renderSkeletonCards()}
             </motion.div>
           )}
         </AnimatePresence>
@@ -284,7 +300,7 @@ const Search = () => {
                     </button>
                   </div>
 
-                  <NewsGrid news={searchResults} onSave={handleSave} savedNews={savedNews} />
+                  <NewsGrid news={searchResults} onSave={handleSave} savedNews={savedNews} isLoading={loading && currentPage === 0} />
 
                   {/* Load More Button */}
                   {searchResults.length >= 10 && !loading && (
