@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useSearchParams } from "react-router-dom";
-import { fetchSearchNews, saveNews, unsaveNews, resetPageState } from "../store/slices/newsSlice";
+import { fetchSearchNews, saveNews, unsaveNews, resetPageState, setApiType, fetchTimeswireSections } from "../store/slices/newsSlice";
 import NewsGrid from "../components/NewsGrid";
 import LoadingSpinner from "../components/LoadingSpinner";
 import SkeletonNewsCard from "../components/SkeletonNewsCard";
@@ -10,42 +10,113 @@ import { motion, AnimatePresence } from "framer-motion";
 const Search = () => {
   const dispatch = useDispatch();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { searchResults, savedNews, loading, error } = useSelector((state) => state.news);
+  const { searchResults, savedNews, loading, error, selectedApiType, timeswireSections, loadingSections } = useSelector((state) => state.news);
+
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
   const [hasSearched, setHasSearched] = useState(false);
   const currentPage = useSelector((state) => state.news.currentPage.search);
   const [isFocused, setIsFocused] = useState(false);
   const [loadMoreHover, setLoadMoreHover] = useState(false);
+  const [selectedSection, setSelectedSection] = useState("all");
+
+  useEffect(() => {
+    // Fetch TimeWire sections when component mounts or when API type changes to TimeWire
+    if (selectedApiType === "timeswire" && timeswireSections.length === 0) {
+      dispatch(fetchTimeswireSections());
+    }
+  }, [selectedApiType, timeswireSections.length, dispatch]);
 
   useEffect(() => {
     const query = searchParams.get("q");
+    const api = searchParams.get("api") || "articlesearch";
+    const section = searchParams.get("section") || "all";
+
+    // Set the selected API type from URL
+    if (api && (api === "articlesearch" || api === "timeswire")) {
+      dispatch(setApiType(api));
+    }
+
+    if (section) {
+      setSelectedSection(section);
+    }
+
     if (query) {
-      console.log("Initiating search for:", query);
+      console.log("Initiating search for:", query, "using API:", api, "section:", section);
       setSearchQuery(query);
-      dispatch(resetPageState("search")); // Reset page state before new search
-      dispatch(fetchSearchNews({ query, page: 0 })); // Use page 0 for initial search
+      dispatch(resetPageState("search"));
+
+      // For TimeWire, use section-based search
+      if (api === "timeswire") {
+        // Format query to include section prefix for better handling in the API
+        const formattedQuery = section !== "all" ? `section:${section}` : query;
+        dispatch(fetchSearchNews({ query: formattedQuery, page: 0, apiType: api }));
+      } else {
+        dispatch(fetchSearchNews({ query, page: 0, apiType: api }));
+      }
+
       setHasSearched(true);
     }
   }, [searchParams, dispatch]);
 
-  useEffect(() => {
-    console.log("Search results:", searchResults);
-  }, [searchResults]);
-
   const handleSearch = (e) => {
     e.preventDefault();
-    if (searchQuery.trim()) {
-      console.log("Executing search for:", searchQuery);
-      setSearchParams({ q: searchQuery });
-      dispatch(resetPageState("search")); // Reset page state before new search
-      dispatch(fetchSearchNews({ query: searchQuery, page: 0 })); // Use page 0 for initial search
+
+    // Logika berbeda untuk ArticleSearch dan TimeWire
+    if (selectedApiType === "articlesearch") {
+      // Artikel harus menggunakan pencarian teks
+      if (searchQuery.trim()) {
+        setSearchParams({ q: searchQuery, api: selectedApiType });
+        dispatch(resetPageState("search"));
+        dispatch(
+          fetchSearchNews({
+            query: searchQuery,
+            page: 0,
+            apiType: selectedApiType,
+          })
+        );
+        setHasSearched(true);
+      }
+    } else {
+      // TimeWire hanya menggunakan section
+      let params = { api: selectedApiType, section: selectedSection };
+      const queryToUse = `section:${selectedSection}`;
+
+      setSearchParams(params);
+      dispatch(resetPageState("search"));
+      dispatch(
+        fetchSearchNews({
+          query: queryToUse,
+          page: 0,
+          apiType: selectedApiType,
+        })
+      );
       setHasSearched(true);
     }
   };
 
-  const handleLoadMore = () => {
-    const nextPage = currentPage + 1;
-    dispatch(fetchSearchNews({ query: searchQuery, page: nextPage }));
+  const handleApiTypeChange = (apiType) => {
+    dispatch(setApiType(apiType));
+
+    // Reset query jika berubah dari TimeWire ke ArticleSearch
+    if (apiType === "articlesearch" && selectedApiType === "timeswire") {
+      setSearchQuery("");
+    }
+
+    // Reset section when changing API type
+    if (apiType === "timeswire" && timeswireSections.length === 0) {
+      dispatch(fetchTimeswireSections());
+    }
+
+    setSelectedSection("all");
+
+    // Reset everything and clear the URL params
+    setSearchParams({});
+    dispatch(resetPageState("search"));
+    setHasSearched(false);
+  };
+
+  const handleSectionChange = (e) => {
+    setSelectedSection(e.target.value);
   };
 
   const handleSave = (article) => {
@@ -63,6 +134,11 @@ const Search = () => {
     setSearchParams({});
     setHasSearched(false);
     dispatch(resetPageState("search"));
+  };
+
+  const handleLoadMore = () => {
+    const nextPage = currentPage + 1;
+    dispatch(fetchSearchNews({ query: searchQuery, page: nextPage, apiType: selectedApiType }));
   };
 
   // Popular search terms with icons
@@ -143,51 +219,146 @@ const Search = () => {
               }}
               transition={{ duration: 0.4 }}
             >
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400">Discover News</span> That Matters
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400">{selectedApiType === "articlesearch" ? "Discover News" : "Latest News"}</span> {selectedApiType === "articlesearch" ? "That Matters" : "By Section"}
             </motion.h1>
 
             <AnimatePresence>
               {(!hasSearched || searchResults.length === 0) && (
                 <motion.p initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.3 }} className="mt-3 max-w-2xl mx-auto text-lg md:text-xl text-gray-600 dark:text-gray-300">
-                  Search for breaking news, articles, and stories from trusted sources worldwide
+                  {selectedApiType === "articlesearch" ? "Search for breaking news, articles, and stories from trusted sources worldwide" : "Browse the latest New York Times articles by section"}
                 </motion.p>
               )}
             </AnimatePresence>
           </motion.div>
 
           <motion.div layout className="max-w-3xl mx-auto" animate={{ y: hasSearched && searchResults.length > 0 ? 0 : 10 }} transition={{ type: "spring", stiffness: 300, damping: 30 }}>
-            <form onSubmit={handleSearch} className="relative z-10">
-              <div className={`flex flex-col md:flex-row md:items-center gap-3 ${isFocused ? "scale-[1.02]" : "scale-100"} transition-all duration-300`}>
-                <div className="relative flex-1 group">
-                  <div className={`absolute inset-0 bg-white dark:bg-gray-800 rounded-xl shadow-lg ${isFocused ? "shadow-blue-200 dark:shadow-blue-900/30" : ""} transition-all duration-300`}></div>
+            {/* API Selection Toggle - Improved with icons */}
+            <div className="flex justify-center mb-6">
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-1.5 shadow-md flex gap-1">
+                <button onClick={() => handleApiTypeChange("articlesearch")} className={`px-4 py-2.5 rounded-md text-sm font-medium transition-all duration-200 flex items-center gap-2 ${selectedApiType === "articlesearch" ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400" : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"}`}>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                  Article Search
+                </button>
+                <button onClick={() => handleApiTypeChange("timeswire")} className={`px-4 py-2.5 rounded-md text-sm font-medium transition-all duration-200 flex items-center gap-2 ${selectedApiType === "timeswire" ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400" : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"}`}>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                  Times Wire
+                </button>
+              </div>
+            </div>
 
-                  <div className="relative flex items-center">
-                    <div className="pl-4 py-1">
-                      <svg className="w-5 h-5 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            {/* TimeWire Section Selector dengan UI yang lebih menarik */}
+            {selectedApiType === "timeswire" && (
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="mb-6">
+                <div className="bg-blue-50 dark:bg-blue-900/10 rounded-xl p-4 border border-blue-100 dark:border-blue-800/40">
+                  <label className="block text-base font-medium text-gray-800 dark:text-gray-200 mb-3 text-center flex items-center justify-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+                    </svg>
+                    Select News Section
+                  </label>
+
+                  {/* Section Quick-select Chips */}
+                  {!loadingSections && timeswireSections.length > 0 && (
+                    <div className="flex flex-wrap gap-2 justify-center mb-4">
+                      {["all", "world", "business", "technology", "science"].map((sectionKey) => {
+                        const section = sectionKey === "all" ? { section: "all", display_name: "All Sections" } : timeswireSections.find((s) => s.section === sectionKey);
+
+                        if (!section) return null;
+
+                        return (
+                          <button key={section.section} onClick={() => setSelectedSection(section.section)} className={`px-3 py-1.5 text-xs rounded-full transition-all ${selectedSection === section.section ? "bg-blue-600 text-white dark:bg-blue-700" : "bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"} border border-gray-200 dark:border-gray-700`}>
+                            {section.display_name}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  <div className="relative">
+                    <select value={selectedSection} onChange={handleSectionChange} className="block w-full pl-4 pr-10 py-3.5 text-base bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 rounded-xl shadow-md dark:text-white text-gray-900" disabled={loadingSections}>
+                      <option value="all">All Sections</option>
+                      {timeswireSections.map((section) => (
+                        <option key={section.section} value={section.section}>
+                          {section.display_name}
+                        </option>
+                      ))}
+                    </select>
+                    {loadingSections && (
+                      <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                        <div className="animate-spin h-5 w-5 border-2 border-blue-500 border-t-transparent rounded-full"></div>
+                      </div>
+                    )}
+                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                      <svg className="h-5 w-5 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                       </svg>
                     </div>
+                  </div>
 
-                    <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} onFocus={() => setIsFocused(true)} onBlur={() => setIsFocused(false)} placeholder="What news are you looking for?" className="w-full px-4 py-3.5 bg-transparent border-0 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-0 text-base md:text-lg" />
-
-                    {searchQuery && (
-                      <button type="button" onClick={handleClearSearch} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                        </svg>
-                      </button>
-                    )}
+                  <div className="mt-3 flex items-center justify-center text-sm">
+                    <span className="text-amber-600 dark:text-amber-400 font-medium flex items-center gap-1">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      Showing most recent articles from each section
+                    </span>
                   </div>
                 </div>
+              </motion.div>
+            )}
 
-                <button type="submit" disabled={loading || !searchQuery.trim()} className="relative md:min-w-[120px] px-6 py-3.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 dark:from-blue-600 dark:to-indigo-700 text-white font-medium rounded-xl transition-all duration-300 shadow-md hover:shadow-lg disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500">
+            <form onSubmit={handleSearch} className="relative z-10">
+              <div className={`flex flex-col md:flex-row md:items-center gap-3`}>
+                {/* Hanya tampilkan input pencarian untuk ArticleSearch */}
+                {selectedApiType === "articlesearch" && (
+                  <div className="relative flex-1 group">
+                    <div className={`absolute inset-0 bg-white dark:bg-gray-800 rounded-xl shadow-lg ${isFocused ? "shadow-blue-200 dark:shadow-blue-900/30" : ""} transition-all duration-300`}></div>
+
+                    <div className="relative flex items-center">
+                      <div className="pl-4 py-1">
+                        <svg className="w-5 h-5 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                      </div>
+
+                      <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} onFocus={() => setIsFocused(true)} onBlur={() => setIsFocused(false)} placeholder="What news are you looking for?" className="w-full px-4 py-3.5 bg-transparent border-0 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-0 text-base md:text-lg" />
+
+                      {searchQuery && (
+                        <button type="button" onClick={handleClearSearch} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Tombol submit dengan gaya berbeda berdasarkan API */}
+                <button type="submit" disabled={loading || (selectedApiType === "articlesearch" && !searchQuery.trim()) || (selectedApiType === "timeswire" && loadingSections)} className={`relative px-6 py-3.5 font-medium rounded-xl transition-all duration-300 shadow-md hover:shadow-lg disabled:opacity-70 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500 ${selectedApiType === "timeswire" ? "bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white md:min-w-[160px]" : "bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white md:min-w-[120px]"}`}>
                   {loading && currentPage === 0 ? (
                     <div className="flex items-center justify-center">
                       <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-2"></div>
-                      <span>Searching</span>
+                      <span>{selectedApiType === "timeswire" ? "Loading" : "Searching"}</span>
                     </div>
                   ) : (
-                    <span>Search</span>
+                    <span className="flex items-center justify-center gap-2">
+                      {selectedApiType === "timeswire" ? (
+                        <>
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                          </svg>
+                          View Latest Articles
+                        </>
+                      ) : (
+                        "Search"
+                      )}
+                    </span>
                   )}
 
                   <motion.span className="absolute inset-0 bg-white rounded-xl" initial={{ opacity: 0 }} animate={{ opacity: loading && currentPage === 0 ? 0.2 : 0 }} transition={{ duration: 0.3 }} />
@@ -195,35 +366,42 @@ const Search = () => {
               </div>
             </form>
 
-            {/* Popular Searches Section */}
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{
-                opacity: hasSearched && searchResults.length > 0 ? 0.8 : 1,
-                y: 0,
-                marginTop: "0.75rem",
-                marginBottom: hasSearched && searchResults.length > 0 ? "0" : "1rem",
-              }}
-              transition={{ delay: 0.1, duration: 0.4 }}
-              className="flex flex-wrap items-center justify-center gap-2 text-center"
-            >
-              <span className="text-sm text-gray-500 dark:text-gray-400 italic">Popular:</span>
-              {popularSearches.map(({ term, icon }) => (
-                <button
-                  key={term}
-                  onClick={() => {
-                    setSearchQuery(term);
-                    setSearchParams({ q: term });
-                    dispatch(resetPageState("search")); // Reset page state before new search
-                    dispatch(fetchSearchNews({ query: term, page: 0 })); // Use page 0 for initial search
-                    setHasSearched(true);
-                  }}
-                  className="px-3 py-1.5 bg-white dark:bg-gray-800/80 hover:bg-blue-50 dark:hover:bg-gray-700/90 rounded-full text-sm text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-800 transition-all shadow-sm hover:shadow flex items-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
-                >
-                  <span className="text-base">{icon}</span> {term}
-                </button>
-              ))}
+            {/* API Description - Enhanced styling */}
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.4 }} className={`mt-3 text-center ${selectedApiType === "articlesearch" ? "text-xs text-gray-500 dark:text-gray-400" : "text-sm text-gray-600 dark:text-gray-400 italic"}`}>
+              {selectedApiType === "articlesearch" ? "Article Search API allows searching across all published articles" : "Times Wire provides real-time access to newest NYT content as it's published"}
             </motion.div>
+
+            {/* Popular Searches Section - Only show for ArticleSearch */}
+            {selectedApiType === "articlesearch" && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{
+                  opacity: hasSearched && searchResults.length > 0 ? 0.8 : 1,
+                  y: 0,
+                  marginTop: "0.75rem",
+                  marginBottom: hasSearched && searchResults.length > 0 ? "0" : "1rem",
+                }}
+                transition={{ delay: 0.1, duration: 0.4 }}
+                className="flex flex-wrap items-center justify-center gap-2 text-center"
+              >
+                <span className="text-sm text-gray-500 dark:text-gray-400 italic">Popular:</span>
+                {popularSearches.map(({ term, icon }) => (
+                  <button
+                    key={term}
+                    onClick={() => {
+                      setSearchQuery(term);
+                      setSearchParams({ q: term, api: selectedApiType });
+                      dispatch(resetPageState("search"));
+                      dispatch(fetchSearchNews({ query: term, page: 0, apiType: selectedApiType }));
+                      setHasSearched(true);
+                    }}
+                    className="px-3 py-1.5 bg-white dark:bg-gray-800/80 hover:bg-blue-50 dark:hover:bg-gray-700/90 rounded-full text-sm text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-800 transition-all shadow-sm hover:shadow flex items-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+                  >
+                    <span className="text-base">{icon}</span> {term}
+                  </button>
+                ))}
+              </motion.div>
+            )}
           </motion.div>
         </div>
       </motion.div>
@@ -247,6 +425,25 @@ const Search = () => {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* API Type Indicator */}
+        {hasSearched && !loading && searchResults.length > 0 && (
+          <motion.div initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} className="mb-4 text-center">
+            {selectedApiType === "articlesearch" ? (
+              <span className="inline-block px-3 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 text-xs font-medium rounded-full">Article Search API</span>
+            ) : (
+              <div className="flex flex-col items-center gap-1">
+                <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 text-xs font-medium rounded-full">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                  Times Wire API • {selectedSection === "all" ? "All Sections" : timeswireSections.find((s) => s.section === selectedSection)?.display_name || selectedSection}
+                </span>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Showing latest articles published by The New York Times</p>
+              </div>
+            )}
+          </motion.div>
+        )}
 
         {/* Loading State - Replace with Skeleton */}
         <AnimatePresence>

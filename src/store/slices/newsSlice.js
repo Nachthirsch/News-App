@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { getLocalNews, getProgrammingNews, searchNews } from "../../services/api";
+import { getLocalNews, getProgrammingNews, searchNews, getTimeswireSections } from "../../services/api";
 
 const loadSavedNews = () => {
   try {
@@ -16,17 +16,45 @@ const processArticles = (articles) => {
   if (!Array.isArray(articles)) return [];
 
   return articles.map((article) => {
+    // Normalisasi struktur artikel untuk konsistensi antar API
+    const normalizedArticle = { ...article };
+
     // Pastikan headline ada
-    if (!article.headline) {
-      article.headline = { main: "No Title Available" };
+    if (!normalizedArticle.headline) {
+      normalizedArticle.headline = { main: "No Title Available" };
+    } else if (typeof normalizedArticle.headline === "string") {
+      // Jika headline adalah string (mungkin dari TimeWire), konversi ke format yang diharapkan
+      normalizedArticle.headline = { main: normalizedArticle.headline };
     }
 
     // Pastikan abstract ada
-    if (!article.abstract) {
-      article.abstract = "No description available";
+    if (!normalizedArticle.abstract) {
+      normalizedArticle.abstract = "No description available";
     }
 
-    return article;
+    // Pastikan URL tersedia dengan benar
+    if (!normalizedArticle.web_url && normalizedArticle.url) {
+      normalizedArticle.web_url = normalizedArticle.url;
+    }
+
+    // Pastikan byline ada dan dalam format yang diharapkan
+    if (!normalizedArticle.byline) {
+      normalizedArticle.byline = { original: "Unknown Author" };
+    } else if (typeof normalizedArticle.byline === "string") {
+      normalizedArticle.byline = { original: normalizedArticle.byline };
+    }
+
+    // Pastikan source ada
+    if (!normalizedArticle.source) {
+      normalizedArticle.source = normalizedArticle.isTimeswire ? "New York Times Wire" : "New York Times";
+    }
+
+    // Pastikan section_name ada
+    if (!normalizedArticle.section_name && normalizedArticle.section) {
+      normalizedArticle.section_name = normalizedArticle.section;
+    }
+
+    return normalizedArticle;
   });
 };
 
@@ -48,14 +76,25 @@ export const fetchProgrammingNews = createAsyncThunk("news/fetchProgrammingNews"
   };
 });
 
-export const fetchSearchNews = createAsyncThunk("news/fetchSearchNews", async ({ query, page = 0 }) => {
-  const response = await searchNews(query, page);
+export const fetchSearchNews = createAsyncThunk("news/fetchSearchNews", async ({ query, page = 0, apiType = "articlesearch" }) => {
+  const response = await searchNews(query, page, apiType);
   return {
     docs: processArticles(response.data.response.docs),
     page,
-    query, // Add query to the payload
-    isNewSearch: page === 0, // Set isNewSearch flag when page is 0
+    query,
+    apiType,
+    isNewSearch: page === 0,
   };
+});
+
+// New thunk action to fetch TimeWire sections
+export const fetchTimeswireSections = createAsyncThunk("news/fetchTimeswireSections", async (_, { rejectWithValue }) => {
+  try {
+    const response = await getTimeswireSections();
+    return response.data.results;
+  } catch (error) {
+    return rejectWithValue(error.message || "Failed to fetch TimeWire sections");
+  }
 });
 
 const newsSlice = createSlice({
@@ -73,6 +112,10 @@ const newsSlice = createSlice({
       programming: 0,
       search: 0,
     },
+    selectedApiType: "articlesearch", // Default API type
+    timeswireSections: [], // New state for TimeWire sections
+    loadingSections: false, // Loading state for sections
+    sectionsError: null, // Store error for sections fetch
   },
   reducers: {
     saveNews: (state, action) => {
@@ -97,6 +140,13 @@ const newsSlice = createSlice({
       } else if (action.payload === "search") {
         state.currentPage.search = 0;
       }
+    },
+    // New reducer to change the selected API type
+    setApiType: (state, action) => {
+      state.selectedApiType = action.payload;
+      // Reset search results when changing API to avoid mixing data
+      state.searchResults = [];
+      state.currentPage.search = 0;
     },
   },
   extraReducers: (builder) => {
@@ -159,6 +209,7 @@ const newsSlice = createSlice({
         // Clear previous search results if it's a new search
         if (action.payload.isNewSearch) {
           state.searchResults = action.payload.docs;
+          state.selectedApiType = action.payload.apiType; // Update the selected API type
         } else {
           state.searchResults = [...state.searchResults, ...action.payload.docs];
         }
@@ -168,9 +219,25 @@ const newsSlice = createSlice({
       .addCase(fetchSearchNews.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message;
+      })
+
+      // TimeWire Sections
+      .addCase(fetchTimeswireSections.pending, (state) => {
+        state.loadingSections = true;
+        state.sectionsError = null;
+      })
+      .addCase(fetchTimeswireSections.fulfilled, (state, action) => {
+        state.timeswireSections = action.payload;
+        state.loadingSections = false;
+        state.sectionsError = null;
+      })
+      .addCase(fetchTimeswireSections.rejected, (state, action) => {
+        state.loadingSections = false;
+        state.sectionsError = action.payload || "Failed to load TimeWire sections";
+        console.error("Failed to fetch TimeWire sections:", state.sectionsError);
       });
   },
 });
 
-export const { saveNews, unsaveNews, clearError, resetPageState } = newsSlice.actions;
+export const { saveNews, unsaveNews, clearError, resetPageState, setApiType } = newsSlice.actions;
 export default newsSlice.reducer;

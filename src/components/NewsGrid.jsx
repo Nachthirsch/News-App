@@ -85,10 +85,12 @@ const NewsGrid = ({ news, onSave, savedNews, isLoading = false }) => {
           ? renderSkeletonCards()
           : news.map((item, index) => {
               const imageUrl = getImageUrl(item);
+              const title = item.headline?.main || "No Title";
+              const url = item.web_url || item.url || "#";
 
               return (
                 <motion.div key={item.web_url || index} variants={cardVariants} className="h-full" layout>
-                  <NewsCard title={item.headline?.main || "No Title"} description={item.abstract || "No description available"} source={getSource(item)} url={item.web_url || "#"} imageUrl={imageUrl} onSave={() => onSave(item)} isSaved={savedNews.some((saved) => saved.web_url === item.web_url)} />
+                  <NewsCard title={title} description={item.abstract || "No description available"} source={getSource(item)} url={url} imageUrl={imageUrl} onSave={() => onSave(item)} isSaved={savedNews.some((saved) => saved.web_url === item.web_url)} />
                 </motion.div>
               );
             })}
