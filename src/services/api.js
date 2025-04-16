@@ -167,16 +167,40 @@ export const getTimeswireNews = async (source = "all", section = "all", limit = 
   const params = { limit, offset };
   const cacheKey = getCacheKey("timeswire", { source, section, limit, offset });
 
+  // Debug log for request parameters
+  console.log("TimeWire API Request:", {
+    source,
+    section,
+    limit,
+    offset,
+    url: `${TIMESWIRE_URL}/content/${source}/${section}.json`,
+    params,
+  });
+
   const cachedData = checkCache(cacheKey);
   if (cachedData) {
-    console.log("Using cached data for timeswire:", source, section);
+    console.log("Using cached TimeWire data:", {
+      source,
+      section,
+      dataLength: cachedData.response.docs.length,
+    });
     return { data: cachedData };
   }
 
   try {
     const response = await timeswireApi.get(`/content/${source}/${section}.json`, { params });
 
-    console.log("TimeWire API Response:", response.data);
+    // Debug logs untuk response asli dari API
+    console.log("TimeWire Raw Response:", response.data);
+    console.log("TimeWire Results Length:", response.data.results?.length || 0);
+
+    // Debug log untuk multimedia
+    if (response.data.results && response.data.results.length > 0) {
+      console.log("Sample Multimedia from first article:", {
+        multimedia: response.data.results[0].multimedia,
+        title: response.data.results[0].title,
+      });
+    }
 
     if (!response.data?.results) {
       console.error("Unexpected API response structure:", response.data);
@@ -185,27 +209,78 @@ export const getTimeswireNews = async (source = "all", section = "all", limit = 
 
     const processedData = {
       ...response.data,
-      // Format TimeWire response to match ArticleSearch structure for consistency
       response: {
-        docs: response.data.results.map((item) => ({
-          web_url: item.url,
-          headline: { main: item.title },
-          abstract: item.abstract,
-          snippet: item.abstract,
-          source: item.source,
-          pub_date: item.published_date,
-          byline: { original: item.byline },
-          section_name: item.section,
-          // Add an identifier to distinguish TimeWire results
-          isTimeswire: true,
-        })),
+        docs: response.data.results.map((item) => {
+          // Debug log untuk setiap item multimedia
+          if (item.multimedia) {
+            console.log(`Multimedia for article "${item.title}":`, item.multimedia);
+          }
+
+          // Transformasi multimedia dari format TimeWire ke format yang konsisten
+          const multimedia = item.multimedia
+            ? item.multimedia.map((media) => ({
+                url: media.url,
+                height: media.height,
+                width: media.width,
+                type: media.type,
+                subtype: media.subtype,
+                format: media.format,
+                caption: media.caption,
+                copyright: media.copyright,
+              }))
+            : [];
+
+          // Mencari berbagai format gambar yang tersedia
+          const thumbnailStandard = multimedia.find((m) => m.format === "Standard Thumbnail");
+          const mediumThreeByTwo210 = multimedia.find((m) => m.format === "mediumThreeByTwo210");
+          const mediumThreeByTwo440 = multimedia.find((m) => m.format === "mediumThreeByTwo440");
+          const articleInline = multimedia.find((m) => m.format === "Normal" || m.format === "articleInline");
+
+          // Pilih gambar default berdasarkan ketersediaan dan preferensi ukuran
+          // Prioritaskan ukuran yang lebih besar jika tersedia
+          const bestImage = mediumThreeByTwo440 || mediumThreeByTwo210 || articleInline || thumbnailStandard;
+
+          return {
+            web_url: item.url,
+            headline: { main: item.title },
+            abstract: item.abstract,
+            snippet: item.abstract,
+            source: item.source,
+            pub_date: item.published_date,
+            byline: { original: item.byline },
+            section_name: item.section,
+            multimedia: multimedia,
+            // Menambahkan properti untuk kemudahan akses gambar
+            thumbnail_standard: thumbnailStandard ? thumbnailStandard.url : null,
+            image_url: bestImage ? bestImage.url : null,
+            // Tambahkan akses ke semua format gambar yang tersedia
+            images: {
+              small: thumbnailStandard ? thumbnailStandard.url : null,
+              medium: mediumThreeByTwo210 ? mediumThreeByTwo210.url : null,
+              large: mediumThreeByTwo440 ? mediumThreeByTwo440.url : null,
+              inline: articleInline ? articleInline.url : null,
+            },
+            isTimeswire: true,
+          };
+        }),
       },
     };
+
+    // Debug log untuk data yang telah diproses
+    console.log("Processed TimeWire Data:", {
+      totalArticles: processedData.response.docs.length,
+      sampleArticle: processedData.response.docs[0],
+    });
 
     saveToCache(cacheKey, processedData);
     return { data: processedData };
   } catch (error) {
-    console.error("API Error in getTimeswireNews:", error);
+    console.error("TimeWire API Error Details:", {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+      config: error.config,
+    });
     if (error.response?.status === 429) {
       throw new Error("Rate limit exceeded. Please try again in a few minutes.");
     }
