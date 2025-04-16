@@ -5,19 +5,11 @@ import { useState, useEffect } from "react";
 
 const NewsGrid = ({ news, onSave, savedNews, isLoading = false }) => {
   const [mounted, setMounted] = useState(false);
-  const [layoutType, setLayoutType] = useState("magazine"); // 'magazine', 'classic', 'compact'
+  const [layoutType, setLayoutType] = useState("featured"); // Changed default to "featured"
 
   useEffect(() => {
     setMounted(true);
-
-    // Choose layout based on number of articles
-    if (news.length <= 3) {
-      setLayoutType("classic");
-    } else if (news.length >= 10) {
-      setLayoutType("magazine");
-    } else {
-      setLayoutType("magazine");
-    }
+    // Remove automatic layout selection to always use featured layout
   }, [news.length]);
 
   // Fungsi helper untuk mendapatkan URL gambar dari item berita
@@ -114,6 +106,37 @@ const NewsGrid = ({ news, onSave, savedNews, isLoading = false }) => {
 
   // Create an array of skeleton cards when loading
   const renderSkeletonCards = () => {
+    if (layoutType === "featured") {
+      return Array(8)
+        .fill()
+        .map((_, index) => {
+          let skeletonClass = "";
+
+          if (index === 0) {
+            skeletonClass = "col-span-3 row-span-2"; // Main article
+          } else if (index === 1) {
+            skeletonClass = "col-span-3 col-start-4"; // Top right
+          } else if (index === 2) {
+            skeletonClass = "col-span-3 col-start-4 row-start-2"; // Middle right
+          } else if (index === 3) {
+            skeletonClass = "col-span-3 col-start-4 row-start-3"; // Bottom right
+          } else if (index === 4) {
+            skeletonClass = "col-span-3 col-start-1 row-start-3"; // Third row left
+          } else {
+            skeletonClass = "col-span-2 row-span-2 row-start-4"; // Bottom row items
+            if (index === 6) skeletonClass += " col-start-3"; // Bottom middle
+            if (index === 7) skeletonClass += " col-start-5"; // Bottom right
+          }
+
+          return (
+            <motion.div key={`skeleton-${index}`} variants={cardVariants} className={`h-full ${skeletonClass}`}>
+              <SkeletonNewsCard isFeature={index === 0} variant={index >= 1 && index <= 4 ? "text-only" : "regular"} />
+            </motion.div>
+          );
+        });
+    }
+
+    // Default skeleton rendering for other layouts
     return Array(6)
       .fill()
       .map((_, index) => {
@@ -155,16 +178,8 @@ const NewsGrid = ({ news, onSave, savedNews, isLoading = false }) => {
 
   // Get current grid class based on layout type
   const getGridClass = () => {
-    if (!hasEnoughItems) return getClassicGridClass();
-
-    switch (layoutType) {
-      case "magazine":
-        return getMagazineGridClass();
-      case "compact":
-        return "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4";
-      default:
-        return getClassicGridClass();
-    }
+    // Always return featured grid class by default for first 8 items
+    return "grid-cols-6 grid-rows-auto"; // Changed from grid-rows-5 to grid-rows-auto to accommodate more items
   };
 
   // Get article size/position class for magazine layout
@@ -193,8 +208,56 @@ const NewsGrid = ({ news, onSave, savedNews, isLoading = false }) => {
     }
   };
 
+  // Get article position class for featured layout
+  const getFeaturedItemClass = (index) => {
+    // First 8 items follow the predefined layout
+    if (index < 8) {
+      switch (index) {
+        case 0:
+          return "col-span-3 row-span-2"; // Main article (top left)
+        case 1:
+          return "col-span-3 col-start-4"; // Top right
+        case 2:
+          return "col-span-3 col-start-4 row-start-2"; // Middle right
+        case 3:
+          return "col-span-3 col-start-4 row-start-3"; // Third row right
+        case 4:
+          return "col-span-3 col-start-1 row-start-3"; // Third row left
+        case 5:
+          return "col-span-2 row-span-2 row-start-4"; // Bottom left
+        case 6:
+          return "col-span-2 row-span-2 col-start-3 row-start-4"; // Bottom middle
+        case 7:
+          return "col-span-2 row-span-2 col-start-5 row-start-4"; // Bottom right
+        default:
+          return "";
+      }
+    } else {
+      // For additional items (after load more), follow the bottom row pattern
+      // Calculate position in the new rows
+      const position = (index - 8) % 3;
+      const rowOffset = Math.floor((index - 8) / 3) * 2;
+
+      // Assign a layout similar to items 5, 6, 7 but in new rows
+      switch (position) {
+        case 0:
+          return `col-span-2 row-span-2 row-start-${6 + rowOffset}`; // Like item 5 but in new row
+        case 1:
+          return `col-span-2 row-span-2 col-start-3 row-start-${6 + rowOffset}`; // Like item 6 but in new row
+        case 2:
+          return `col-span-2 row-span-2 col-start-5 row-start-${6 + rowOffset}`; // Like item 7 but in new row
+        default:
+          return "";
+      }
+    }
+  };
+
   // Get article class based on layout type and index
   const getItemClass = (index) => {
+    if (layoutType === "featured") {
+      return getFeaturedItemClass(index);
+    }
+
     if (!hasEnoughItems) return "";
 
     switch (layoutType) {
@@ -209,6 +272,18 @@ const NewsGrid = ({ news, onSave, savedNews, isLoading = false }) => {
 
   // Get article variant based on position in layout
   const getArticleVariant = (index) => {
+    if (layoutType === "featured") {
+      // For first 8 items
+      if (index < 8) {
+        if (index === 0) return "hero"; // Main feature with image
+        if (index >= 1 && index <= 4) return "text-only"; // Text-only cards (positions 2, 3, 4, 5)
+        return "regular"; // Bottom cards with images (positions 6, 7, 8)
+      } else {
+        // For additional items after load more
+        return "regular"; // Use regular cards for all additional items
+      }
+    }
+
     if (!hasEnoughItems) return index === 0 ? "feature" : "regular";
 
     if (layoutType === "magazine") {
@@ -236,35 +311,21 @@ const NewsGrid = ({ news, onSave, savedNews, isLoading = false }) => {
           {isLoading
             ? renderSkeletonCards()
             : news.map((item, index) => {
+                // Removed slice to show all news items
                 const imageUrl = getImageUrl(item);
                 const title = item.headline?.main || "No Title";
                 const url = item.web_url || item.url || "#";
                 const variant = getArticleVariant(index);
                 const gridClass = getItemClass(index);
+                const isTextOnly = variant === "text-only";
 
                 return (
-                  <motion.div key={item.web_url || index} variants={cardVariants} className={`h-full ${gridClass}`} layout>
+                  <motion.div key={item.web_url || index} variants={cardVariants} className={`h-full ${gridClass}`} layout initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: index > 7 ? 0.1 : 0 }}>
                     <NewsCard title={title} description={item.abstract || "No description available"} source={getSource(item)} url={url} imageUrl={imageUrl} onSave={() => onSave(item)} isSaved={savedNews.some((saved) => saved.web_url === item.web_url)} variant={variant} isFeature={variant === "hero" || variant === "feature"} priority={index < 3} />
                   </motion.div>
                 );
               })}
         </motion.div>
-      )}
-
-      {!isLoading && news.length > 0 && (
-        <div className="mt-8 text-center">
-          <div className="inline-flex items-center space-x-2 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg">
-            <button onClick={() => setLayoutType("magazine")} className={`px-4 py-2 text-sm rounded-md transition-colors ${layoutType === "magazine" ? "bg-white dark:bg-gray-700 shadow text-blue-600 dark:text-blue-400" : "text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"}`}>
-              Magazine
-            </button>
-            <button onClick={() => setLayoutType("classic")} className={`px-4 py-2 text-sm rounded-md transition-colors ${layoutType === "classic" ? "bg-white dark:bg-gray-700 shadow text-blue-600 dark:text-blue-400" : "text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"}`}>
-              Classic
-            </button>
-            <button onClick={() => setLayoutType("compact")} className={`px-4 py-2 text-sm rounded-md transition-colors ${layoutType === "compact" ? "bg-white dark:bg-gray-700 shadow text-blue-600 dark:text-blue-400" : "text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"}`}>
-              Compact
-            </button>
-          </div>
-        </div>
       )}
     </div>
   );

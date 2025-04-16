@@ -4,7 +4,7 @@ import { fetchIndonesiaNews, saveNews, unsaveNews, resetPageState } from "../sto
 import NewsGrid from "../components/NewsGrid";
 import LoadingSpinner from "../components/LoadingSpinner";
 
-const Home = () => {
+const Indonesia = () => {
   const dispatch = useDispatch();
   const { indonesiaNews, savedNews, loading, error, currentPage } = useSelector((state) => state.news);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -26,9 +26,22 @@ const Home = () => {
   const handleLoadMore = () => {
     setLoadingMore(true);
     const nextPage = currentPage.indonesia + 1;
-    dispatch(fetchIndonesiaNews({ page: nextPage, isNewFetch: false })).finally(() => {
-      setLoadingMore(false);
-    });
+
+    // Add a small delay to make loading state visible to user
+    setTimeout(() => {
+      dispatch(fetchIndonesiaNews({ page: nextPage, isNewFetch: false }))
+        .unwrap()
+        .then(() => {
+          // Scroll to new content
+          window.scrollTo({
+            top: document.body.scrollHeight - 1000,
+            behavior: "smooth",
+          });
+        })
+        .finally(() => {
+          setLoadingMore(false);
+        });
+    }, 500);
   };
 
   const handleSave = (article) => {
@@ -88,4 +101,4 @@ const Home = () => {
   );
 };
 
-export default Home;
+export default Indonesia;
