@@ -12,7 +12,7 @@ const NewsCard = ({
   onSave,
   isSaved,
   isFeature = false,
-  variant = "regular", // 'hero', 'feature', 'horizontal', 'regular', 'small', 'text-only'
+  variant = "regular", // Added new variants: 'title-only', 'thumbnail-square'
   priority = false,
 }) => {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -59,15 +59,19 @@ const NewsCard = ({
   const getCardLayout = () => {
     switch (variant) {
       case "hero":
-        return "flex flex-col"; // Changed from flex-col md:flex-row to always be vertical
+        return "flex flex-col";
       case "feature":
         return "flex flex-col";
       case "horizontal":
-        return "flex flex-col"; // Changed to always be vertical
+        return "flex flex-col";
       case "small":
         return "flex flex-col";
       case "text-only":
         return "flex flex-col";
+      case "title-only":
+        return "flex flex-col";
+      case "thumbnail-square":
+        return "flex flex-col h-full w-full"; // Add w-full to ensure proper sizing
       default:
         return "flex flex-col";
     }
@@ -76,15 +80,19 @@ const NewsCard = ({
   const getImageContainerClass = () => {
     switch (variant) {
       case "hero":
-        return "w-full h-64 md:h-[400px]"; // Changed from w-full md:w-2/3 to always be full width
+        return "w-full h-64 md:h-[400px]";
       case "feature":
         return "w-full h-48 md:h-56";
       case "horizontal":
-        return "w-full h-48"; // Changed to match other cards
+        return "w-full h-48";
       case "small":
         return "w-full h-32";
       case "text-only":
         return "hidden"; // Hide image container for text-only variant
+      case "title-only":
+        return "hidden"; // Hide image container for title-only variant
+      case "thumbnail-square":
+        return "w-full aspect-square h-[120px]"; // Fixed height for consistency
       default:
         return "w-full h-48";
     }
@@ -93,15 +101,19 @@ const NewsCard = ({
   const getContentContainerClass = () => {
     switch (variant) {
       case "hero":
-        return "p-5 md:p-6 w-full"; // Changed from w-full md:w-1/3 to always be full width
+        return "p-5 md:p-6 w-full";
       case "feature":
         return "p-5";
       case "horizontal":
-        return "p-4 md:p-5 w-full"; // Changed to full width
+        return "p-4 md:p-5 w-full";
       case "small":
         return "p-3";
       case "text-only":
-        return "p-5 h-full flex flex-col"; // Full height for text-only variant
+        return "p-5 h-full flex flex-col";
+      case "title-only":
+        return "p-4 h-full flex flex-col"; // Simpler padding for title-only
+      case "thumbnail-square":
+        return "p-2 flex flex-col flex-grow"; // Smaller padding for thumbnail cards
       default:
         return "p-4";
     }
@@ -120,6 +132,10 @@ const NewsCard = ({
         return "text-base line-clamp-none mb-2"; // Tidak membatasi jumlah baris
       case "text-only":
         return "text-xl line-clamp-none mb-3";
+      case "title-only":
+        return "text-lg font-bold line-clamp-3"; // Limit to 3 lines for title-only
+      case "thumbnail-square":
+        return "text-xs font-bold line-clamp-2 mt-1"; // Smaller font for thumbnail cards with 2-line limit
       default:
         return "text-lg line-clamp-none mb-2"; // Tidak membatasi jumlah baris
     }
@@ -138,6 +154,10 @@ const NewsCard = ({
         return "max-h-[80px] overflow-y-auto"; // Gunakan max-height dengan overflow yang bisa di-scroll
       case "text-only":
         return "flex-grow overflow-y-auto"; // Make description fill available space
+      case "title-only":
+        return "hidden"; // No description for title-only
+      case "thumbnail-square":
+        return "hidden"; // No description for thumbnail-square
       default:
         return "max-h-[120px] overflow-y-auto"; // Gunakan max-height dengan overflow yang bisa di-scroll
     }
@@ -173,9 +193,17 @@ const NewsCard = ({
                  overflow-hidden border border-gray-200 dark:border-gray-700
                  ${getCardLayout()} h-full`}
     >
-      {variant !== "text-only" && (
+      {variant !== "text-only" && variant !== "title-only" && (
         <div className={`relative overflow-hidden ${getImageContainerClass()}`}>
-          <motion.img src={imageUrl} alt={title} loading={loadingPriority} className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" onError={(e) => (e.target.src = "/fallback-image.jpg")} layoutId={`image-${url}`} />
+          <motion.img
+            src={imageUrl}
+            alt={title}
+            loading={loadingPriority}
+            className={`w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500 
+                      ${variant === "thumbnail-square" ? "aspect-square object-cover" : ""}`}
+            onError={(e) => (e.target.src = "/fallback-image.jpg")}
+            layoutId={`image-${url}`}
+          />
 
           {/* Category/source badge for hero and feature articles */}
           {(variant === "hero" || variant === "feature") && (
@@ -187,52 +215,73 @@ const NewsCard = ({
             </div>
           )}
 
-          <div className="absolute top-3 right-3 flex items-center gap-2">
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={handleSpeak}
-              className="p-2 rounded-full bg-white/90 hover:bg-white shadow-sm
-                       transition-all duration-200 backdrop-blur-sm"
-              title={isPlaying ? "Stop speaking" : "Listen to article"}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-700 group-hover:text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                {isPlaying ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072M12 6v12m0-12L8 8m4-2l4 2m-4 12l-4-2m4 2l4-2" /> : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8L12 12l-5.25 4V8z" />}
-              </svg>
-            </motion.button>
+          {/* Control buttons */}
+          {variant !== "thumbnail-square" && (
+            <div className="absolute top-3 right-3 flex items-center gap-2">
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={handleSpeak}
+                className="p-2 rounded-full bg-white/90 hover:bg-white shadow-sm
+                         transition-all duration-200 backdrop-blur-sm"
+                title={isPlaying ? "Stop speaking" : "Listen to article"}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-700 group-hover:text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  {isPlaying ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072M12 6v12m0-12L8 8m4-2l4 2m-4 12l-4-2m4 2l4-2" /> : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8L12 12l-5.25 4V8z" />}
+                </svg>
+              </motion.button>
 
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={handleShare}
-              className="p-2 rounded-full bg-white/90 hover:bg-white shadow-sm
-                       transition-all duration-200 backdrop-blur-sm"
-              title="Share article"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-700 group-hover:text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-              </svg>
-            </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={handleShare}
+                className="p-2 rounded-full bg-white/90 hover:bg-white shadow-sm
+                         transition-all duration-200 backdrop-blur-sm"
+                title="Share article"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-700 group-hover:text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                </svg>
+              </motion.button>
 
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={onSave}
-              className="p-2 rounded-full bg-white/90 hover:bg-white shadow-sm
-                       transition-all duration-200 backdrop-blur-sm"
-              title={isSaved ? "Remove from saved" : "Save article"}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className={`h-4 w-4 text-gray-700 group-hover:text-red-500 ${isSaved ? "text-red-500" : "text-gray-700 group-hover:text-red-500"}`} fill={isSaved ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-              </svg>
-            </motion.button>
-          </div>
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={onSave}
+                className="p-2 rounded-full bg-white/90 hover:bg-white shadow-sm
+                         transition-all duration-200 backdrop-blur-sm"
+                title={isSaved ? "Remove from saved" : "Save article"}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className={`h-4 w-4 text-gray-700 group-hover:text-red-500 ${isSaved ? "text-red-500" : "text-gray-700 group-hover:text-red-500"}`} fill={isSaved ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                </svg>
+              </motion.button>
+            </div>
+          )}
+
+          {/* Simplified controls for thumbnail-square variant */}
+          {variant === "thumbnail-square" && (
+            <div className="absolute top-2 right-2">
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={onSave}
+                className="p-1.5 rounded-full bg-white/90 hover:bg-white shadow-sm
+                         transition-all duration-200 backdrop-blur-sm"
+                title={isSaved ? "Remove from saved" : "Save article"}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className={`h-3 w-3 ${isSaved ? "text-red-500" : "text-gray-700"}`} fill={isSaved ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                </svg>
+              </motion.button>
+            </div>
+          )}
         </div>
       )}
 
-      <div className={`flex flex-col ${variant === "text-only" ? "flex-grow" : ""} ${getContentContainerClass()}`}>
+      <div className={`flex flex-col ${variant === "text-only" || variant === "title-only" ? "flex-grow" : ""} ${getContentContainerClass()}`}>
         {/* Source indicator - show at top for text-only variant */}
-        {variant === "text-only" && (
+        {(variant === "text-only" || variant === "title-only") && (
           <div className="flex items-center justify-between mb-3">
             <motion.span
               initial={{ opacity: 0, x: -10 }}
@@ -274,8 +323,8 @@ const NewsCard = ({
           </div>
         )}
 
-        {/* Only show this source indicator for variants other than hero/feature/text-only */}
-        {!(variant === "hero" || variant === "feature" || variant === "text-only") && (
+        {/* Only show this source indicator for variants other than hero/feature/text-only/title-only */}
+        {!(variant === "hero" || variant === "feature" || variant === "text-only" || variant === "title-only" || variant === "thumbnail-square") && (
           <div className="flex items-center justify-between mb-2">
             <motion.span
               initial={{ opacity: 0, x: -10 }}
@@ -291,31 +340,33 @@ const NewsCard = ({
           </div>
         )}
 
-        <motion.a href={url} target="_blank" rel="noopener noreferrer" className={variant === "text-only" ? "flex-grow" : ""}>
+        <motion.a href={url} target="_blank" rel="noopener noreferrer" className={variant === "text-only" || variant === "title-only" || variant === "thumbnail-square" ? "flex-grow" : ""}>
           <h2 className={`font-bold text-gray-900 dark:text-white ${getTitleClass()}`}>{title}</h2>
 
           {/* Deskripsi dengan format yang lebih baik */}
           <div className={`text-gray-600 dark:text-gray-300 mb-3 ${getDescriptionClass()} ${variant === "small" ? "hidden sm:block" : ""}`}>{formatDescription(description)}</div>
         </motion.a>
 
-        {/* Tombol "Baca selengkapnya" yang lebih menonjol */}
-        <div className="flex items-center justify-between pt-3 mt-auto border-t border-gray-100 dark:border-gray-700">
-          {/* For hero, feature, and text-only, show reading time on the left */}
-          {(variant === "hero" || variant === "feature" || variant === "text-only") && <span className="text-xs text-gray-500 dark:text-gray-400">{Math.ceil(description.length / 200)} min read</span>}
+        {/* No footer for title-only and thumbnail-square variants */}
+        {variant !== "title-only" && variant !== "thumbnail-square" && (
+          <div className="flex items-center justify-between pt-3 mt-auto border-t border-gray-100 dark:border-gray-700">
+            {/* For hero, feature, and text-only, show reading time on the left */}
+            {(variant === "hero" || variant === "feature" || variant === "text-only") && <span className="text-xs text-gray-500 dark:text-gray-400">{Math.ceil(description.length / 200)} min read</span>}
 
-          <a
-            href={url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={`text-sm font-medium text-blue-600 dark:text-blue-400
-                      hover:underline inline-flex items-center ${variant === "hero" || variant === "feature" || variant === "text-only" ? "" : "ml-auto"}`}
-          >
-            Baca selengkapnya
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-            </svg>
-          </a>
-        </div>
+            <a
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`text-sm font-medium text-blue-600 dark:text-blue-400
+                        hover:underline inline-flex items-center ${variant === "hero" || variant === "feature" || variant === "text-only" ? "" : "ml-auto"}`}
+            >
+              Baca selengkapnya
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+            </a>
+          </div>
+        )}
       </div>
     </motion.div>
   );
@@ -330,7 +381,7 @@ NewsCard.propTypes = {
   url: PropTypes.string.isRequired,
   imageUrl: PropTypes.string.isRequired,
   isFeature: PropTypes.bool,
-  variant: PropTypes.oneOf(["hero", "feature", "horizontal", "regular", "small", "text-only"]),
+  variant: PropTypes.oneOf(["hero", "feature", "horizontal", "regular", "small", "text-only", "title-only", "thumbnail-square"]),
   priority: PropTypes.bool,
 };
 

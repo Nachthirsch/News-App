@@ -5,15 +5,49 @@ import { useState, useEffect } from "react";
 
 const NewsGrid = ({ news, onSave, savedNews, isLoading = false }) => {
   const [mounted, setMounted] = useState(false);
-  const [layoutType, setLayoutType] = useState("featured"); // Changed default to "featured"
+  const [layoutType, setLayoutType] = useState("mobile-grid"); // Changed default to "mobile-grid"
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
   useEffect(() => {
     setMounted(true);
-    // Remove automatic layout selection to always use featured layout
-  }, [news.length]);
+
+    // Add window resize listener to adjust layout based on screen size
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+      // Auto-switch to featured layout on larger screens
+      if (window.innerWidth >= 768) {
+        setLayoutType("featured");
+      } else {
+        setLayoutType("mobile-grid");
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    handleResize(); // Call once on mount
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   // Fungsi helper untuk mendapatkan URL gambar dari item berita
-  const getImageUrl = (item) => {
+  const getImageUrl = (item, preferThumbnail = false) => {
+    // Check if we should prefer thumbnail for smaller card layouts
+    if (preferThumbnail) {
+      // First check for thumbnail in the new API format
+      if (item.multimedia && typeof item.multimedia === "object" && !Array.isArray(item.multimedia)) {
+        if (item.multimedia.thumbnail && item.multimedia.thumbnail.url) {
+          return item.multimedia.thumbnail.url;
+        }
+      }
+
+      // Then check for thumbnail in array format
+      if (Array.isArray(item.multimedia) && item.multimedia.length > 0) {
+        const thumbStandard = item.multimedia.find((m) => m.format === "Standard Thumbnail" || m.format === "thumbStandard");
+        if (thumbStandard) {
+          return item.isTimeswire ? thumbStandard.url : `https://www.nytimes.com/${thumbStandard.url}`;
+        }
+      }
+    }
+
     // Check for direct image URL from TimeWire
     if (item.image_url) {
       return item.image_url;
@@ -178,8 +212,12 @@ const NewsGrid = ({ news, onSave, savedNews, isLoading = false }) => {
 
   // Get current grid class based on layout type
   const getGridClass = () => {
-    // Always return featured grid class by default for first 8 items
-    return "grid-cols-6 grid-rows-auto"; // Changed from grid-rows-5 to grid-rows-auto to accommodate more items
+    if (layoutType === "mobile-grid") {
+      return "grid-cols-5 grid-rows-auto gap-4";
+    }
+
+    // Default to featured layout otherwise
+    return "grid-cols-6 grid-rows-auto";
   };
 
   // Get article size/position class for magazine layout
@@ -205,6 +243,26 @@ const NewsGrid = ({ news, onSave, savedNews, isLoading = false }) => {
     } else {
       // Regular items
       return "col-span-full md:col-span-3 lg:col-span-3";
+    }
+  };
+
+  // Get article position class for mobile grid layout
+  const getMobileGridItemClass = (index) => {
+    const position = index % 10; // Repeating pattern every 10 items
+
+    switch (position) {
+      case 0: // Card 1 - Full width with image+title+desc
+        return "col-span-5 row-span-2";
+      case 1: // Card 2 - Full width with title+desc
+        return "col-span-5 row-span-2";
+      case 2: // Card 3 - Full width with just title
+        return "col-span-5";
+      case 3: // Card 4 - Full width with just title
+        return "col-span-5";
+      case 9: // Card 10 - Full width with image+title+desc
+        return "col-span-5 row-span-2";
+      default:
+        return ""; // Cards 5-9 will be handled separately in a horizontal scroll container
     }
   };
 
@@ -254,6 +312,10 @@ const NewsGrid = ({ news, onSave, savedNews, isLoading = false }) => {
 
   // Get article class based on layout type and index
   const getItemClass = (index) => {
+    if (layoutType === "mobile-grid") {
+      return getMobileGridItemClass(index);
+    }
+
     if (layoutType === "featured") {
       return getFeaturedItemClass(index);
     }
@@ -272,6 +334,30 @@ const NewsGrid = ({ news, onSave, savedNews, isLoading = false }) => {
 
   // Get article variant based on position in layout
   const getArticleVariant = (index) => {
+    if (layoutType === "mobile-grid") {
+      const position = index % 10;
+
+      switch (position) {
+        case 0: // Card 1
+          return "hero";
+        case 1: // Card 2
+          return "text-only";
+        case 2: // Card 3
+        case 3: // Card 4
+          return "title-only";
+        case 4: // Card 5
+        case 5: // Card 6
+        case 6: // Card 7
+        case 7: // Card 8
+        case 8: // Card 9
+          return "thumbnail-square";
+        case 9: // Card 10
+          return "hero";
+        default:
+          return "regular";
+      }
+    }
+
     if (layoutType === "featured") {
       // For first 8 items
       if (index < 8) {
@@ -296,6 +382,58 @@ const NewsGrid = ({ news, onSave, savedNews, isLoading = false }) => {
     return index === 0 ? "feature" : "regular";
   };
 
+  // Determine if we should use thumbnail version of image for this position
+  const shouldUseThumbnail = (index) => {
+    if (layoutType === "mobile-grid") {
+      const position = index % 10;
+      // Use thumbnails for cards 5-9 (thumbnail-square variant)
+      return position >= 4 && position <= 8;
+    }
+    return false;
+  };
+
+  // Determine if a card should be in the horizontal scroll section (cards 5-9)
+  const isHorizontalScrollCard = (index) => {
+    const position = index % 10;
+    return position >= 4 && position <= 8;
+  };
+
+  // Group cards by rows for rendering
+  const groupNewsByRows = (newsItems) => {
+    if (!newsItems || newsItems.length === 0) return [];
+
+    const rows = [];
+    let currentRow = [];
+    let horizontalScrollItems = [];
+
+    newsItems.forEach((item, index) => {
+      const position = index % 10;
+
+      // Group cards 5-9 into horizontal scroll containers
+      if (position >= 4 && position <= 8) {
+        horizontalScrollItems.push({ item, index });
+
+        // When we reach the end of cards 5-9, add the horizontal scroll container
+        if (position === 8 || index === newsItems.length - 1) {
+          rows.push({
+            type: "horizontalScroll",
+            items: [...horizontalScrollItems],
+          });
+          horizontalScrollItems = [];
+        }
+      } else {
+        // Regular card not in horizontal scroll
+        rows.push({
+          type: "regular",
+          item,
+          index,
+        });
+      }
+    });
+
+    return rows;
+  };
+
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {!isLoading && news.length === 0 ? (
@@ -304,20 +442,48 @@ const NewsGrid = ({ news, onSave, savedNews, isLoading = false }) => {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
           </svg>
           <p className="text-gray-500 dark:text-gray-400 text-lg font-medium">No news articles found</p>
-          <p className="text-gray-400 dark:text-gray-500 text-sm text-center mt-2">Try adjusting your search or check back later for updates</p>
+          <p class="text-gray-400 dark:text-gray-500 text-sm text-center mt-2">Try adjusting your search or check back later for updates</p>
         </motion.div>
       ) : (
-        <motion.div className={`grid gap-5 md:gap-6 lg:gap-8 ${getGridClass()}`} variants={containerVariants} initial="hidden" animate={mounted ? "visible" : "hidden"}>
-          {isLoading
-            ? renderSkeletonCards()
-            : news.map((item, index) => {
-                // Removed slice to show all news items
-                const imageUrl = getImageUrl(item);
+        <motion.div className={`${layoutType === "mobile-grid" ? "" : `grid gap-5 md:gap-6 lg:gap-8 ${getGridClass()}`}`} variants={containerVariants} initial="hidden" animate={mounted ? "visible" : "hidden"}>
+          {isLoading ? (
+            renderSkeletonCards()
+          ) : layoutType === "mobile-grid" ? (
+            // Mobile Grid Layout with Horizontal Scrolling section
+            <div className="space-y-5">
+              {groupNewsByRows(news).map((row, rowIndex) => {
+                // For horizontal scroll section
+                if (row.type === "horizontalScroll") {
+                  return (
+                    <div key={`row-${rowIndex}`} className="mb-6">
+                      <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3 px-1">Trending Stories</h3>
+                      <div className="overflow-x-auto pb-4 -mx-4 px-4 scrollbar-hide">
+                        <div className="flex space-x-4" style={{ minWidth: "min-content" }}>
+                          {row.items.map(({ item, index }) => {
+                            const imageUrl = getImageUrl(item, true); // Always use thumbnail for horizontal scroll items
+                            const title = item.headline?.main || "No Title";
+                            const url = item.web_url || item.url || "#";
+
+                            return (
+                              <motion.div key={item.web_url || index} variants={cardVariants} className="w-[160px] flex-shrink-0 h-full" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+                                <NewsCard title={title} description={item.abstract || "No description available"} source={getSource(item)} url={url} imageUrl={imageUrl} onSave={() => onSave(item)} isSaved={savedNews.some((saved) => saved.web_url === item.web_url)} variant="thumbnail-square" isFeature={false} priority={false} />
+                              </motion.div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                }
+
+                // For regular cards
+                const item = row.item;
+                const index = row.index;
+                const imageUrl = getImageUrl(item, false);
                 const title = item.headline?.main || "No Title";
                 const url = item.web_url || item.url || "#";
                 const variant = getArticleVariant(index);
                 const gridClass = getItemClass(index);
-                const isTextOnly = variant === "text-only";
 
                 return (
                   <motion.div key={item.web_url || index} variants={cardVariants} className={`h-full ${gridClass}`} layout initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: index > 7 ? 0.1 : 0 }}>
@@ -325,6 +491,23 @@ const NewsGrid = ({ news, onSave, savedNews, isLoading = false }) => {
                   </motion.div>
                 );
               })}
+            </div>
+          ) : (
+            // Other layouts (featured, magazine, etc.)
+            news.map((item, index) => {
+              const imageUrl = getImageUrl(item, shouldUseThumbnail(index));
+              const title = item.headline?.main || "No Title";
+              const url = item.web_url || item.url || "#";
+              const variant = getArticleVariant(index);
+              const gridClass = getItemClass(index);
+
+              return (
+                <motion.div key={item.web_url || index} variants={cardVariants} className={`h-full ${gridClass}`} layout initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: index > 7 ? 0.1 : 0 }}>
+                  <NewsCard title={title} description={item.abstract || "No description available"} source={getSource(item)} url={url} imageUrl={imageUrl} onSave={() => onSave(item)} isSaved={savedNews.some((saved) => saved.web_url === item.web_url)} variant={variant} isFeature={variant === "hero" || variant === "feature"} priority={index < 3} />
+                </motion.div>
+              );
+            })
+          )}
         </motion.div>
       )}
     </div>
