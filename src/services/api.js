@@ -111,9 +111,22 @@ export const getLocalNews = async (page = 0) => {
     return { data: processedData };
   } catch (error) {
     console.error("API Error:", error);
+
+    // Handle rate limiting with fallback to cache
     if (error.response?.status === 429) {
+      const cachedData = checkCache(cacheKey);
+      if (cachedData) {
+        console.log("Rate limited, returning cached data");
+        return { data: cachedData };
+      }
       throw new Error("Rate limit exceeded. Please try again in a few minutes.");
     }
+
+    // Handle other API errors
+    if (error.response?.status >= 400) {
+      throw new Error(`API Error: ${error.response.status} - ${error.response.statusText}`);
+    }
+
     throw error;
   }
 };
@@ -155,9 +168,23 @@ export const getProgrammingNews = async (page = 0) => {
     return { data: processedData };
   } catch (error) {
     console.error("API Error in getProgrammingNews:", error);
+
+    // Handle rate limiting
     if (error.response?.status === 429) {
+      // Return cached data if available, otherwise throw a user-friendly error
+      const cachedData = checkCache(cacheKey);
+      if (cachedData) {
+        console.log("Rate limited, returning cached data");
+        return { data: cachedData };
+      }
       throw new Error("Rate limit exceeded. Please try again in a few minutes.");
     }
+
+    // Handle other API errors
+    if (error.response?.status >= 400) {
+      throw new Error(`API Error: ${error.response.status} - ${error.response.statusText}`);
+    }
+
     throw error;
   }
 };
