@@ -41,12 +41,7 @@ const Programming = () => {
   };
 
   return (
-    <div className="container mx-auto px-4">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2 text-gray-900 dark:text-white">Programming News</h1>
-        <p className="text-gray-600 dark:text-gray-400">Latest programming and technology news from around the world</p>
-      </div>
-
+    <div className="container mx-auto px-4 pt-20 pb-16">
       {/* Show skeleton loading state or news content */}
       {loading && currentPage.programming === 0 ? (
         <NewsGrid news={[]} onSave={handleSave} savedNews={savedNews} isLoading={true} />
@@ -64,7 +59,7 @@ const Programming = () => {
           {/* Load More Button */}
           {programmingNews.length >= 10 && (
             <div className="flex justify-center mt-8 mb-12">
-              <button onClick={handleLoadMore} disabled={loadingMore} className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-md shadow transition duration-200 disabled:opacity-50">
+              <button onClick={handleLoadMore} disabled={loadingMore} className="px-6 py-3 bg-neutral-700 hover:bg-neutral-800 text-white rounded-md shadow transition duration-200 disabled:opacity-50">
                 {loadingMore ? (
                   <>
                     <span className="inline-block animate-spin mr-2">⟳</span>

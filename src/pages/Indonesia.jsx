@@ -55,28 +55,30 @@ const Indonesia = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 pt-10 sm:pt-10">
+    <div className="container mx-auto px-4 pt-20 pb-16">
+      {/* Page title with consistent spacing */}
+
       {/* Show skeleton loading state or news content */}
       {loading && currentPage.indonesia === 0 ? (
         <NewsGrid news={[]} onSave={handleSave} savedNews={savedNews} isLoading={true} />
       ) : error ? (
-        <div className="bg-red-100 dark:bg-red-900/30 border border-red-400 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded relative">
-          <strong className="font-bold">Error: </strong>
+        <div className="bg-neutral-100 dark:bg-neutral-800/30 border border-neutral-300 dark:border-neutral-700 text-neutral-700 dark:text-neutral-400 px-5 py-4 rounded-md my-8">
+          <strong className="font-semibold">Error: </strong>
           <span className="block sm:inline">{error}</span>
         </div>
       ) : indonesiaNews?.length === 0 ? (
-        <div className="bg-yellow-100 dark:bg-yellow-900/30 border border-yellow-400 dark:border-yellow-800 text-yellow-700 dark:text-yellow-400 px-4 py-3 rounded relative">
-          <strong className="font-bold">No news found: </strong>
+        <div className="bg-neutral-100 dark:bg-neutral-800/30 border border-neutral-300 dark:border-neutral-700 text-neutral-700 dark:text-neutral-400 px-5 py-4 rounded-md my-8">
+          <strong className="font-semibold">No news found: </strong>
           <span className="block sm:inline">The API did not return any news articles for Indonesia. This may be due to recent API changes. Try using the search functionality instead.</span>
         </div>
       ) : (
         <>
           <NewsGrid news={indonesiaNews} onSave={handleSave} savedNews={savedNews} />
 
-          {/* Load More Button */}
+          {/* Load More Button with improved spacing */}
           {indonesiaNews.length >= 10 && (
-            <div className="flex justify-center mt-8 mb-12">
-              <button onClick={handleLoadMore} disabled={loadingMore} className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-md shadow transition duration-200 disabled:opacity-50">
+            <div className="flex justify-center mt-16 mb-8">
+              <button onClick={handleLoadMore} disabled={loadingMore} className="px-8 py-3 bg-neutral-800 hover:bg-neutral-700 text-white rounded-md transition duration-200 disabled:opacity-50">
                 {loadingMore ? (
                   <>
                     <span className="inline-block animate-spin mr-2">⟳</span>
@@ -91,7 +93,7 @@ const Indonesia = () => {
 
           {/* Show spinner when loading more */}
           {loadingMore && (
-            <div className="flex justify-center mt-4">
+            <div className="flex justify-center mt-8">
               <LoadingSpinner />
             </div>
           )}

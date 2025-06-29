@@ -6,15 +6,29 @@ const TIMESWIRE_URL = import.meta.env.VITE_TIMESWIRE_URL || "https://api.nytimes
 
 // Membuat cache sederhana
 const cache = new Map();
-const CACHE_DURATION = 5 * 60 * 1000; // 5 menit dalam milliseconds
+const CACHE_DURATION = 5 * 60 * 1000;
 
-// Fungsi untuk membuat cache key - ensure uniqueness between different searches
 const getCacheKey = (endpoint, params) => {
-  // Add query parameter explicitly to create distinct cache keys for different search terms
   if (endpoint === "search" && params.q) {
     return `${endpoint}:${params.q}:${params.page || 0}:${params.apiType || "articlesearch"}`;
   }
   return `${endpoint}:${JSON.stringify(params)}`;
+};
+
+const checkCache = (cacheKey) => {
+  const cached = cache.get(cacheKey);
+  if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+    return cached.data;
+  }
+  return null;
+};
+
+// Fungsi helper untuk menyimpan ke cache
+const saveToCache = (cacheKey, data) => {
+  cache.set(cacheKey, {
+    data,
+    timestamp: Date.now(),
+  });
 };
 
 // Create separate axios instances for each API
@@ -34,7 +48,7 @@ const timeswireApi = axios.create({
 
 // Menambahkan interceptor untuk rate limiting
 let lastRequestTime = 0;
-const MIN_REQUEST_INTERVAL = 1000; // 1 detik antara requests
+const MIN_REQUEST_INTERVAL = 1000;
 
 const addRateLimitingInterceptor = (apiInstance) => {
   apiInstance.interceptors.request.use(async (config) => {
@@ -55,21 +69,6 @@ addRateLimitingInterceptor(articleSearchApi);
 addRateLimitingInterceptor(timeswireApi);
 
 // Fungsi helper untuk mengecek cache
-const checkCache = (cacheKey) => {
-  const cached = cache.get(cacheKey);
-  if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
-    return cached.data;
-  }
-  return null;
-};
-
-// Fungsi helper untuk menyimpan ke cache
-const saveToCache = (cacheKey, data) => {
-  cache.set(cacheKey, {
-    data,
-    timestamp: Date.now(),
-  });
-};
 
 export const getLocalNews = async (page = 0) => {
   // Using a more flexible approach with multiple query combinations

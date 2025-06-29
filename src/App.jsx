@@ -15,7 +15,7 @@ function App() {
     <Provider store={store}>
       <ThemeProvider>
         <Router>
-          <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+          <div className="min-h-screen bg-neutral-50 dark:bg-neutral-900 text-neutral-800 dark:text-neutral-200 transition-colors duration-500">
             <Header />
             <main>
               <Routes>
