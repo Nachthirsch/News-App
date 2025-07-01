@@ -13,10 +13,12 @@ const Saved = () => {
   };
 
   return (
-    <div className="max-w-[1200px] mx-auto px-5 md:px-6">
-      {/* Simple Header Section */}
-      <section className="pt-32 pb-8">
-        <h1 className="text-2xl font-bold text-neutral-800 dark:text-neutral-100 mb-2">Saved Articles</h1>
+    <div className="max-w-[1200px] mx-auto px-4 md:px-5">
+      {/* Simple Header Section with reduced padding */}
+      <section className="pt-28 pb-6">
+        {" "}
+        {/* Reduced from pt-32 pb-8 */}
+        <h1 className="text-xl font-bold text-neutral-800 dark:text-neutral-100 mb-2">Saved Articles</h1> {/* Reduced from text-2xl */}
         <p className="text-neutral-600 dark:text-neutral-400">Your personal collection of saved news articles</p>
         {savedNews.length > 0 && (
           <div className="mt-6 text-sm text-neutral-500 dark:text-neutral-500">
@@ -25,8 +27,10 @@ const Saved = () => {
         )}
       </section>
 
-      {/* Content Section */}
-      <section className="py-8 border-t border-neutral-200 dark:border-neutral-800">
+      {/* Content Section with reduced padding */}
+      <section className="py-6 border-t border-neutral-200 dark:border-neutral-800">
+        {" "}
+        {/* Reduced from py-8 */}
         {savedNews.length === 0 ? (
           <div className="py-16 text-center">
             <div className="inline-flex items-center justify-center mb-6 w-16 h-16 bg-neutral-100 dark:bg-neutral-800">

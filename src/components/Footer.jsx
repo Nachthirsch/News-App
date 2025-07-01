@@ -23,6 +23,13 @@ const Footer = () => {
           <div className="text-sm text-gray-600 dark:text-gray-400 mb-4">
             Created by <span className="font-semibold hover:text-blue-500 dark:hover:text-blue-400 transition-colors">Handra Putratama Tanjung</span>
           </div>
+
+          <div className="text-xs text-gray-500 dark:text-gray-500">
+            Powered by{" "}
+            <a href="https://developer.nytimes.com" className="underline hover:text-blue-500 dark:hover:text-blue-400 transition-colors">
+              The New York Times API
+            </a>
+          </div>
         </div>
       </div>
     </footer>

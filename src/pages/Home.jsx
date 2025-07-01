@@ -4,9 +4,9 @@ import { FaSearch, FaBookmark, FaGlobeAsia } from "react-icons/fa";
 
 const Home = () => {
   return (
-    <div className="max-w-[1200px] mx-auto px-5 md:px-6">
-      {/* Simplified Hero Section */}
-      <section className="pt-32 pb-20">
+    <div className="max-w-[1200px] mx-auto px-4 md:px-5">
+      {/* Hero Section - Full Screen */}
+      <section className="min-h-screen flex flex-col justify-center py-16">
         <div className="max-w-4xl">
           <h1 className="text-4xl md:text-5xl font-bold mb-8 text-neutral-800 dark:text-neutral-100">
             Access quality journalism
@@ -36,9 +36,11 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Features Section - Even More Minimal */}
-      <section className="py-16 border-t border-neutral-200 dark:border-neutral-800">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+      {/* Features Section - Full Screen */}
+      <section className="min-h-screen flex flex-col justify-center border-t border-neutral-200 dark:border-neutral-800 py-16">
+        <h2 className="text-2xl font-medium mb-16 text-neutral-800 dark:text-neutral-100">Key features</h2>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 my-auto">
           {/* Feature 1 */}
           <div>
             <div className="flex items-start mb-4">
@@ -68,32 +70,32 @@ const Home = () => {
         </div>
       </section>
 
-      {/* How It Works - Streamlined */}
-      <section className="py-16 border-t border-neutral-200 dark:border-neutral-800">
-        <h2 className="text-lg font-medium mb-12 text-neutral-800 dark:text-neutral-100">How it works</h2>
+      {/* How It Works - Full Screen */}
+      <section className="min-h-screen flex flex-col justify-center border-t border-neutral-200 dark:border-neutral-800 py-16">
+        <h2 className="text-2xl font-medium mb-16 text-neutral-800 dark:text-neutral-100">How it works</h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 my-auto">
           <div>
-            <span className="block text-4xl font-light text-neutral-400 dark:text-neutral-600 mb-3">01</span>
+            <span className="block text-5xl font-light text-neutral-400 dark:text-neutral-600 mb-4">01</span>
             <p className="text-neutral-600 dark:text-neutral-400">Choose between Indonesia news or Programming news and search for specific topics</p>
           </div>
 
           <div>
-            <span className="block text-4xl font-light text-neutral-400 dark:text-neutral-600 mb-3">02</span>
+            <span className="block text-5xl font-light text-neutral-400 dark:text-neutral-600 mb-4">02</span>
             <p className="text-neutral-600 dark:text-neutral-400">Browse articles and apply filters to refine results</p>
           </div>
 
           <div>
-            <span className="block text-4xl font-light text-neutral-400 dark:text-neutral-600 mb-3">03</span>
+            <span className="block text-5xl font-light text-neutral-400 dark:text-neutral-600 mb-4">03</span>
             <p className="text-neutral-600 dark:text-neutral-400">Save interesting articles to your personal reading list</p>
           </div>
         </div>
       </section>
 
-      {/* CTA Section - Ultra Minimal */}
-      <section className="py-16 border-t border-neutral-200 dark:border-neutral-800 mb-16">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-          <h2 className="text-xl font-medium text-neutral-800 dark:text-neutral-100 mb-6 md:mb-0">Ready to explore?</h2>
+      {/* CTA Section - Full Screen */}
+      <section className="min-h-screen flex flex-col justify-center border-t border-neutral-200 dark:border-neutral-800 py-16">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between my-auto">
+          <h2 className="text-3xl font-medium text-neutral-800 dark:text-neutral-100 mb-8 md:mb-0">Ready to explore?</h2>
 
           <div className="flex flex-col sm:flex-row gap-4">
             <Link to="/search" className="px-6 py-3 bg-neutral-900 hover:bg-neutral-800 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-white font-medium">
@@ -105,11 +107,6 @@ const Home = () => {
           </div>
         </div>
       </section>
-
-      {/* Footer note */}
-      <div className="py-6 text-neutral-500 dark:text-neutral-500 text-sm text-center border-t border-neutral-200 dark:border-neutral-800">
-        <p>NYT API &copy; {new Date().getFullYear()}</p>
-      </div>
     </div>
   );
 };

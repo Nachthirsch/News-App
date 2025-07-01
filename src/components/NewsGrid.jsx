@@ -435,7 +435,9 @@ const NewsGrid = ({ news, onSave, savedNews, isLoading = false }) => {
   };
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-6">
+      {" "}
+      {/* Reduced padding from px-4 sm:px-6 lg:px-8 py-8 */}
       {!isLoading && news.length === 0 ? (
         <motion.div className="flex flex-col justify-center items-center h-64 border border-gray-100 dark:border-gray-800 rounded-lg p-8" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
           <svg className="w-16 h-16 text-gray-300 dark:text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -445,7 +447,8 @@ const NewsGrid = ({ news, onSave, savedNews, isLoading = false }) => {
           <p className="text-gray-400 dark:text-gray-500 text-sm text-center mt-2">Try adjusting your search or check back later for updates</p>
         </motion.div>
       ) : (
-        <motion.div className={`${layoutType === "mobile-grid" ? "" : `grid gap-5 md:gap-6 lg:gap-8 ${getGridClass()}`}`} variants={containerVariants} initial="hidden" animate={mounted ? "visible" : "hidden"}>
+        <motion.div className={`${layoutType === "mobile-grid" ? "" : `grid gap-4 md:gap-5 ${getGridClass()}`}`} variants={containerVariants} initial="hidden" animate={mounted ? "visible" : "hidden"}>
+          {/* Reduced gap from gap-5 md:gap-6 lg:gap-8 */}
           {isLoading ? (
             renderSkeletonCards()
           ) : layoutType === "mobile-grid" ? (

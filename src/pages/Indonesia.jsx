@@ -55,9 +55,10 @@ const Indonesia = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 pt-20 pb-16">
+    <div className="container mx-auto px-4 pt-16 pb-12">
+      {" "}
+      {/* Reduced from pt-20 pb-16 */}
       {/* Page title with consistent spacing */}
-
       {/* Show skeleton loading state or news content */}
       {loading && currentPage.indonesia === 0 ? (
         <NewsGrid news={[]} onSave={handleSave} savedNews={savedNews} isLoading={true} />

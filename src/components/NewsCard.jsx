@@ -69,42 +69,42 @@ const NewsCard = ({ title, description, source, url, imageUrl, onSave, isSaved, 
   const getImageContainerClass = () => {
     switch (variant) {
       case "hero":
-        return "w-full h-64 md:h-[400px]";
+        return "w-full h-52 md:h-[320px]"; // Reduced from h-64 md:h-[400px]
       case "feature":
-        return "w-full h-48 md:h-56";
+        return "w-full h-40 md:h-48"; // Reduced from h-48 md:h-56
       case "horizontal":
-        return "w-full h-48";
+        return "w-full h-40"; // Reduced from h-48
       case "small":
-        return "w-full h-32";
+        return "w-full h-28"; // Reduced from h-32
       case "text-only":
         return "hidden"; // Hide image container for text-only variant
       case "title-only":
         return "hidden"; // Hide image container for title-only variant
       case "thumbnail-square":
-        return "w-full aspect-square h-[120px]"; // Fixed height for consistency
+        return "w-full aspect-square h-[100px]"; // Reduced from h-[120px]
       default:
-        return "w-full h-48";
+        return "w-full h-40"; // Reduced from h-48
     }
   };
 
   const getContentContainerClass = () => {
     switch (variant) {
       case "hero":
-        return "p-5 md:p-6 w-full";
+        return "p-4 md:p-5 w-full"; // Reduced from p-5 md:p-6
       case "feature":
-        return "p-5";
+        return "p-4"; // Reduced from p-5
       case "horizontal":
-        return "p-4 md:p-5 w-full";
+        return "p-3 md:p-4 w-full"; // Reduced from p-4 md:p-5
       case "small":
-        return "p-3";
+        return "p-2"; // Reduced from p-3
       case "text-only":
-        return "p-5 h-full flex flex-col";
+        return "p-4 h-full flex flex-col"; // Reduced from p-5
       case "title-only":
-        return "p-4 h-full flex flex-col"; // Simpler padding for title-only
+        return "p-3 h-full flex flex-col"; // Reduced from p-4
       case "thumbnail-square":
-        return "p-2 flex flex-col flex-grow"; // Smaller padding for thumbnail cards
+        return "p-2 flex flex-col flex-grow";
       default:
-        return "p-4";
+        return "p-3"; // Reduced from p-4
     }
   };
 
@@ -112,21 +112,21 @@ const NewsCard = ({ title, description, source, url, imageUrl, onSave, isSaved, 
   const getTitleClass = () => {
     switch (variant) {
       case "hero":
-        return "text-xl md:text-2xl lg:text-3xl line-clamp-none mb-3"; // Tidak membatasi jumlah baris
+        return "text-lg md:text-xl lg:text-2xl line-clamp-none mb-2"; // Reduced sizes and spacing
       case "feature":
-        return "text-lg md:text-xl line-clamp-none mb-3"; // Tidak membatasi jumlah baris
+        return "text-base md:text-lg line-clamp-none mb-2"; // Reduced sizes and spacing
       case "horizontal":
-        return "text-lg line-clamp-none mb-2"; // Tidak membatasi jumlah baris
+        return "text-base line-clamp-none mb-2";
       case "small":
-        return "text-base line-clamp-none mb-2"; // Tidak membatasi jumlah baris
+        return "text-sm line-clamp-none mb-1"; // Reduced size and spacing
       case "text-only":
-        return "text-xl line-clamp-none mb-3";
+        return "text-lg line-clamp-none mb-2"; // Reduced from text-xl and mb-3
       case "title-only":
-        return "text-lg font-bold line-clamp-3"; // Limit to 3 lines for title-only
+        return "text-base font-bold line-clamp-3"; // Reduced from text-lg
       case "thumbnail-square":
-        return "text-xs font-bold line-clamp-2 mt-1"; // Smaller font for thumbnail cards with 2-line limit
+        return "text-xs font-bold line-clamp-2 mt-1";
       default:
-        return "text-lg line-clamp-none mb-2"; // Tidak membatasi jumlah baris
+        return "text-base line-clamp-none mb-2"; // Reduced from text-lg
     }
   };
 
@@ -134,13 +134,13 @@ const NewsCard = ({ title, description, source, url, imageUrl, onSave, isSaved, 
   const getDescriptionClass = () => {
     switch (variant) {
       case "hero":
-        return "max-h-[150px] md:max-h-[300px] overflow-y-auto"; // Gunakan max-height dengan overflow yang bisa di-scroll
+        return "max-h-[120px] md:max-h-[200px] overflow-y-auto"; // Reduced from max-h-[150px] md:max-h-[300px]
       case "feature":
-        return "max-h-[130px] overflow-y-auto"; // Gunakan max-height dengan overflow yang bisa di-scroll
+        return "max-h-[100px] overflow-y-auto"; // Reduced from max-h-[130px]
       case "horizontal":
-        return "max-h-[100px] md:max-h-[120px] overflow-y-auto"; // Gunakan max-height dengan overflow yang bisa di-scroll
+        return "max-h-[80px] md:max-h-[100px] overflow-y-auto"; // Reduced from max-h-[100px] md:max-h-[120px]
       case "small":
-        return "max-h-[80px] overflow-y-auto"; // Gunakan max-height dengan overflow yang bisa di-scroll
+        return "max-h-[60px] overflow-y-auto"; // Reduced from max-h-[80px]
       case "text-only":
         return "flex-grow overflow-y-auto"; // Make description fill available space
       case "title-only":
@@ -148,14 +148,14 @@ const NewsCard = ({ title, description, source, url, imageUrl, onSave, isSaved, 
       case "thumbnail-square":
         return "hidden"; // No description for thumbnail-square
       default:
-        return "max-h-[120px] overflow-y-auto"; // Gunakan max-height dengan overflow yang bisa di-scroll
+        return "max-h-[100px] overflow-y-auto"; // Reduced from max-h-[120px]
     }
   };
 
   // Memastikan teks deskripsi tidak terlalu panjang tapi tetap bisa dibaca
   const formatDescription = (text) => {
     // Jika deskripsi terlalu panjang, tambahkan indikator baca selengkapnya
-    const maxLength = variant === "hero" ? 300 : variant === "feature" ? 200 : variant === "horizontal" ? 180 : variant === "small" ? 100 : 150;
+    const maxLength = variant === "hero" ? 250 : variant === "feature" ? 150 : variant === "horizontal" ? 130 : variant === "small" ? 80 : 120;
 
     if (text.length > maxLength) {
       return (
@@ -182,7 +182,7 @@ const NewsCard = ({ title, description, source, url, imageUrl, onSave, isSaved, 
                  transition-all duration-300 
                  overflow-hidden
                  ${getCardLayout()} h-full
-                 ${variant !== "thumbnail-square" ? "pb-4 mb-4" : ""}`}
+                 ${variant !== "thumbnail-square" ? "pb-3 mb-3" : ""}`} // Reduced from pb-4 mb-4
     >
       {variant !== "text-only" && variant !== "title-only" && (
         <div className={`relative overflow-hidden ${getImageContainerClass()}`}>
@@ -273,7 +273,9 @@ const NewsCard = ({ title, description, source, url, imageUrl, onSave, isSaved, 
       <div className={`flex flex-col ${variant === "text-only" || variant === "title-only" ? "flex-grow" : ""} ${getContentContainerClass()}`}>
         {/* Source indicator - show at top for text-only variant */}
         {(variant === "text-only" || variant === "title-only") && (
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between mb-2">
+            {" "}
+            {/* Reduced from mb-3 */}
             <motion.span
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
@@ -282,7 +284,6 @@ const NewsCard = ({ title, description, source, url, imageUrl, onSave, isSaved, 
             >
               {source}
             </motion.span>
-
             <div className="flex items-center gap-2">
               <motion.button
                 whileHover={{ scale: 1.1 }}
@@ -315,7 +316,9 @@ const NewsCard = ({ title, description, source, url, imageUrl, onSave, isSaved, 
 
         {/* Only show this source indicator for variants other than hero/feature/text-only/title-only */}
         {!(variant === "hero" || variant === "feature" || variant === "text-only" || variant === "title-only" || variant === "thumbnail-square") && (
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center justify-between mb-1">
+            {" "}
+            {/* Reduced from mb-2 */}
             <motion.span
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
@@ -329,9 +332,8 @@ const NewsCard = ({ title, description, source, url, imageUrl, onSave, isSaved, 
 
         <motion.a href={url} target="_blank" rel="noopener noreferrer" className={variant === "text-only" || variant === "title-only" || variant === "thumbnail-square" ? "flex-grow" : ""}>
           <h2 className={`font-bold text-neutral-800 dark:text-neutral-100 ${getTitleClass()}`}>{title}</h2>
-
           {/* Deskripsi dengan format yang lebih baik */}
-          <div className={`text-neutral-600 dark:text-neutral-300 mb-3 ${getDescriptionClass()} ${variant === "small" ? "hidden sm:block" : ""}`}>{formatDescription(description)}</div>
+          <div className={`text-neutral-600 dark:text-neutral-300 mb-2 text-sm ${getDescriptionClass()} ${variant === "small" ? "hidden sm:block" : ""}`}>{formatDescription(description)}</div> {/* Added text-sm and reduced mb-3 to mb-2 */}
         </motion.a>
       </div>
     </motion.div>
